@@ -1,9 +1,12 @@
+import Button from "@/components/Button";
+
 export default function HomePage() {
   return (
     <main className="flex min-h-screen items-center justify-center">
       <h1 className="text-4xl font-bold">
         Khans Food
       </h1>
+      <Button variant="secondary" text="Order Now" />
     </main>
   );
 }
