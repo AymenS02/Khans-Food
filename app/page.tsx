@@ -1,13 +1,15 @@
-import { connectToDatabase } from "@/lib/mongodb";
+import { formatPrice } from "@/lib/utils/formatPrice";
+import { generateSlug } from "@/lib/utils/generateSlug";
+import { generateOrderNumber } from "@/lib/utils/generateOrderNumber";
 
-export default async function HomePage() {
-  await connectToDatabase();
-
+export default function HomePage() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold">
-        Khans Food
-      </h1>
+    <main>
+      <p>{formatPrice(14.99)}</p>
+
+      <p>{generateSlug("Chicken Biryani")}</p>
+
+      <p>{generateOrderNumber()}</p>
     </main>
   );
 }

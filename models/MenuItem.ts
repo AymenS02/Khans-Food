@@ -8,7 +8,7 @@ export interface IMenuItem extends Document {
   price: number;
 
   image?: string;
-  category: mongoose.Types.ObjectId;
+  categoryId: mongoose.Types.ObjectId;
 
   available: boolean;
 
@@ -53,7 +53,7 @@ const MenuItemSchema = new Schema<IMenuItem>(
       trim: true,
     },
 
-    category: {
+    categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: true,
@@ -78,7 +78,7 @@ const MenuItemSchema = new Schema<IMenuItem>(
 );
 
 MenuItemSchema.index({
-  category: 1,
+  categoryId: 1,
   available: 1,
   displayOrder: 1,
 });
