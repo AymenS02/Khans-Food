@@ -1,15 +1,18 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface IMenuItem extends Document {
   name: string;
+  slug: string;
   description?: string;
-  category: string;
 
   price: number;
 
   image?: string;
+  category: mongoose.Types.ObjectId;
 
   available: boolean;
+
+  displayOrder: number;
 
   createdAt: Date;
   updatedAt: Date;
@@ -21,17 +24,22 @@ const MenuItemSchema = new Schema<IMenuItem>(
       type: String,
       required: true,
       trim: true,
+      maxlength: 150,
+    },
+
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
     },
 
     description: {
       type: String,
       trim: true,
-    },
-
-    category: {
-      type: String,
-      required: true,
-      trim: true,
+      maxlength: 1000,
     },
 
     price: {
@@ -42,17 +50,38 @@ const MenuItemSchema = new Schema<IMenuItem>(
 
     image: {
       type: String,
+      trim: true,
+    },
+
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+      index: true,
     },
 
     available: {
       type: Boolean,
       default: true,
+      index: true,
+    },
+
+    displayOrder: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {
     timestamps: true,
   }
 );
+
+MenuItemSchema.index({
+  category: 1,
+  available: 1,
+  displayOrder: 1,
+});
 
 const MenuItem: Model<IMenuItem> =
   mongoose.models.MenuItem ||
