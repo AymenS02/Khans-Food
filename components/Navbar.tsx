@@ -31,12 +31,10 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
 
   return (
     <div className="fixed top-0 left-1/2 z-50 w-full -translate-x-1/2">
-      <div className="relative mx-auto w-[90%] md:max-w-[70%] shadow-2xl">
+      <div className="relative mx-auto w-[90%] md:min-w-[30%] shadow-2xl">
         {/* Navbar */}
         <nav
-          className={`rounded-b-[18px] bg-foreground px-5 text-white transition-all duration-300 ${
-            isMenuOpen ? "h-100" : "h-16"
-          }`}
+          className="rounded-b-[18px] bg-foreground px-5 text-white transition-all duration-300"
         >
           {/* Top navbar */}
           <div className="flex h-16 items-center justify-between">
@@ -121,8 +119,8 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
           {/* Mobile Menu */}
           <div
             id="mobile-navigation"
-            className={`overflow-hidden transition-all duration-300 md:hidden ${
-              isMenuOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+            className={`overflow-hidden transition-all duration-600 md:hidden ${
+              isMenuOpen ? "max-h-[600] opacity-100" : "max-h-0 opacity-0"
             }`}
           >
             <div className="flex flex-col gap-5 py-6 pl-10 text-2xl font-semibold">
