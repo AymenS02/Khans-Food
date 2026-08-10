@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
+import { useCartStore } from "@/stores/cartStore";
 
 interface NavbarProps {
   isLoggedIn: boolean;
@@ -28,6 +29,13 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
       callbackUrl: "/",
     });
   };
+
+  const items = useCartStore((state) => state.items);
+
+  const totalItems = items.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
   return (
     <div className="fixed top-0 left-1/2 z-50 w-full -translate-x-1/2">
@@ -83,6 +91,7 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
 
             {/* Cart Icon + Hamburger */}
             <div className="flex items-center gap-5">
+              <span>{totalItems}</span>
               <Link href="/cart" className="relative">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

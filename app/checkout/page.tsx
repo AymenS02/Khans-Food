@@ -1,31 +1,26 @@
-import { getMenuItems } from "@/features/menu/actions/getMenuItems";
-import MenuGrid from "@/features/menu/components/MenuGrid";
+import CheckoutForm from "@/features/checkout/components/CheckoutForm";
 
-const menuItems = await getMenuItems();
-
-export default function MenuPage() {
+export default function CheckoutPage() {
   return (
     <main className="bg-background px-5 py-16 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-5xl">
 
-        {/* Page heading */}
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
             Khans Food
           </p>
 
           <h1 className="mt-2 text-4xl font-bold text-foreground sm:text-5xl">
-            Our Menu
+            Checkout
           </h1>
 
           <p className="mt-5 text-lg leading-8 text-foreground/60">
-            Browse our selection of freshly prepared dishes.
+            Enter your information and choose your pickup time.
           </p>
         </div>
 
-        {/* Menu */}
         <div className="mt-10">
-          <MenuGrid items={menuItems} />
+          <CheckoutForm />
         </div>
 
       </div>

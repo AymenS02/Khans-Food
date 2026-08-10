@@ -1,63 +1,64 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, {
+  Document,
+  Model,
+  Schema,
+  Types,
+} from "mongoose";
+
+export type OrderType = "regular" | "catering";
+
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "ready"
+  | "completed"
+  | "cancelled";
+
+export type PaymentStatus =
+  | "pending"
+  | "paid"
+  | "failed"
+  | "refunded";
 
 export interface IOrderItem {
-  menuItem: mongoose.Types.ObjectId;
-
+  menuItem: Types.ObjectId;
   name: string;
   price: number;
-
   quantity: number;
-
-  subtotal: number;
-}
-
-export interface IOrderPayment {
-  status:
-    | "pending"
-    | "processing"
-    | "paid"
-    | "failed"
-    | "refunded";
-
-  stripePaymentIntentId?: string;
-
-  paidAt?: Date;
-}
-
-export interface IOrderPickup {
-  date: Date;
-
-  time: string;
 }
 
 export interface IOrder extends Document {
-  orderNumber: string;
-
-  customer: mongoose.Types.ObjectId;
-
-  type: "regular" | "catering";
-
-  cateringRequest?: mongoose.Types.ObjectId;
+  customer?: Types.ObjectId;
+  
+  orderType: OrderType;
 
   items: IOrderItem[];
 
-  pickup: IOrderPickup;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+
+  pickupDate: Date;
+  pickupTime: string;
+
+  notes?: string;
 
   subtotal: number;
   tax: number;
   total: number;
 
-  payment: IOrderPayment;
+  orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus;
 
-  status:
-    | "pending"
-    | "confirmed"
-    | "preparing"
-    | "ready"
-    | "completed"
-    | "cancelled";
+  stripePaymentIntentId?: string;
 
-  customerNotes?: string;
+  catering?: {
+    eventDate: Date;
+    guestCount: number;
+    notes?: string;
+  };
 
   createdAt: Date;
   updatedAt: Date;
@@ -67,7 +68,7 @@ const OrderItemSchema = new Schema<IOrderItem>(
   {
     menuItem: {
       type: Schema.Types.ObjectId,
-      ref: "MenuItem",
+      ref: "Menu",
       required: true,
     },
 
@@ -88,59 +89,6 @@ const OrderItemSchema = new Schema<IOrderItem>(
       required: true,
       min: 1,
     },
-
-    subtotal: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-  },
-  {
-    _id: false,
-  }
-);
-
-const OrderPaymentSchema = new Schema<IOrderPayment>(
-  {
-    status: {
-      type: String,
-      enum: [
-        "pending",
-        "processing",
-        "paid",
-        "failed",
-        "refunded",
-      ],
-      default: "pending",
-      required: true,
-    },
-
-    stripePaymentIntentId: {
-      type: String,
-      index: true,
-    },
-
-    paidAt: {
-      type: Date,
-    },
-  },
-  {
-    _id: false,
-  }
-);
-
-const OrderPickupSchema = new Schema<IOrderPickup>(
-  {
-    date: {
-      type: Date,
-      required: true,
-    },
-
-    time: {
-      type: String,
-      required: true,
-      trim: true,
-    },
   },
   {
     _id: false,
@@ -149,30 +97,16 @@ const OrderPickupSchema = new Schema<IOrderPickup>(
 
 const OrderSchema = new Schema<IOrder>(
   {
-    orderNumber: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
-
     customer: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      index: true,
+      required: false,
     },
 
-    type: {
+    orderType: {
       type: String,
       enum: ["regular", "catering"],
       required: true,
-      index: true,
-    },
-
-    cateringRequest: {
-      type: Schema.Types.ObjectId,
-      ref: "CateringRequest",
     },
 
     items: {
@@ -180,13 +114,50 @@ const OrderSchema = new Schema<IOrder>(
       required: true,
       validate: {
         validator: (items: IOrderItem[]) => items.length > 0,
-        message: "An order must contain at least one item.",
+        message: "Order must contain at least one item",
       },
     },
 
-    pickup: {
-      type: OrderPickupSchema,
+    firstName: {
+      type: String,
       required: true,
+      trim: true,
+    },
+
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    pickupDate: {
+      type: Date,
+      required: true,
+    },
+
+    pickupTime: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    notes: {
+      type: String,
+      trim: true,
+      maxlength: 500,
     },
 
     subtotal: {
@@ -207,12 +178,7 @@ const OrderSchema = new Schema<IOrder>(
       min: 0,
     },
 
-    payment: {
-      type: OrderPaymentSchema,
-      required: true,
-    },
-
-    status: {
+    orderStatus: {
       type: String,
       enum: [
         "pending",
@@ -223,30 +189,45 @@ const OrderSchema = new Schema<IOrder>(
         "cancelled",
       ],
       default: "pending",
-      required: true,
-      index: true,
     },
 
-    customerNotes: {
+    paymentStatus: {
       type: String,
-      trim: true,
-      maxlength: 2000,
+      enum: [
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+      ],
+      default: "pending",
+    },
+
+    stripePaymentIntentId: {
+      type: String,
+      sparse: true,
+    },
+
+    catering: {
+      eventDate: {
+        type: Date,
+      },
+
+      guestCount: {
+        type: Number,
+        min: 1,
+      },
+
+      notes: {
+        type: String,
+        trim: true,
+        maxlength: 1000,
+      },
     },
   },
   {
     timestamps: true,
   }
 );
-
-OrderSchema.index({
-  customer: 1,
-  createdAt: -1,
-});
-
-OrderSchema.index({
-  status: 1,
-  "pickup.date": 1,
-});
 
 const Order: Model<IOrder> =
   mongoose.models.Order ||
