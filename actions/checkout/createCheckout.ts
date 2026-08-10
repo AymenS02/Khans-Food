@@ -1,14 +1,16 @@
-"use server";
+import { Types } from "mongoose";
 
-import { validatePickup } from "@/features/checkout/services/validatePickup";
-import { validateOrderItems } from "@/features/checkout/services/validateOrderItems";
-import { calculateOrderTotal } from "@/features/checkout/services/calculateOrderTotal";
+import Order from "@/models/Order";
+import { connectToDatabase } from "@/lib/mongodb";
+import { stripe } from "@/lib/stripe";
+
+import {
+  validateOrderItems,
+  type CartItemInput,
+} from "@/features/checkout/services/validateOrderItems";
 
 interface CreateCheckoutInput {
-  items: {
-    menuItemId: string;
-    quantity: number;
-  }[];
+  items: CartItemInput[];
 
   pickupDate: string;
   pickupTime: string;
@@ -19,75 +21,103 @@ interface CreateCheckoutInput {
   phone: string;
 
   notes?: string;
+
+  customerId?: string;
 }
 
 export async function createCheckout(
   input: CreateCheckoutInput
 ) {
   try {
-    /*
-     * Temporary business hours.
-     *
-     * Later these will come from
-     * the BusinessSettings model.
-     */
-    const businessHours = {
-      isOpen: true,
-      openingTime: "11:00",
-      closingTime: "19:00",
-      cutoffTime: "16:00",
-    };
+    const {
+      items,
+      pickupDate,
+      pickupTime,
+      firstName,
+      lastName,
+      email,
+      phone,
+      notes,
+      customerId,
+    } = input;
 
-    /*
-     * Validate pickup date and time.
-     */
-    const pickupValidation = validatePickup({
-      pickupDate: input.pickupDate,
-      pickupTime: input.pickupTime,
-      businessHours,
+    // 1. Validate cart against the database
+    const validated = await validateOrderItems(items);
+
+    // 2. Calculate totals on the server
+    const taxRate = 0.13;
+
+    const tax = Number(
+      (validated.subtotal * taxRate).toFixed(2)
+    );
+
+    const total = Number(
+      (validated.subtotal + tax).toFixed(2)
+    );
+
+    await connectToDatabase();
+
+    // 3. Create the order
+    const order = await Order.create({
+      customer: customerId
+        ? new Types.ObjectId(customerId)
+        : undefined,
+
+      orderType: "regular",
+
+      items: validated.items,
+
+      firstName,
+      lastName,
+      email,
+      phone,
+
+      pickupDate: new Date(pickupDate),
+      pickupTime,
+
+      notes,
+
+      subtotal: validated.subtotal,
+      taxRate,
+      tax,
+      total,
+
+      orderStatus: "pending",
+      paymentStatus: "pending",
     });
 
-    if (!pickupValidation.valid) {
-      return {
-        success: false,
-        error: pickupValidation.error,
-      };
-    }
+    // 4. Create Stripe PaymentIntent
+    const paymentIntent =
+      await stripe.paymentIntents.create({
+        amount: Math.round(total * 100),
+        currency: "cad",
 
-    /*
-     * Validate menu items against MongoDB.
-     *
-     * This ensures the browser cannot
-     * manipulate prices or availability.
-     */
-    const validatedItems =
-      await validateOrderItems(input.items);
+        metadata: {
+          orderId: order._id.toString(),
+        },
 
-    /*
-     * Calculate the real order total.
-     */
-    const orderTotal = calculateOrderTotal({
-      subtotal: validatedItems.subtotal,
-      taxRate: 0.13,
-    });
+        receipt_email: email,
+      });
 
-    /*
-     * Stripe will eventually be created here.
-     *
-     * We are intentionally NOT doing that yet.
-     */
+    // 5. Save Stripe PaymentIntent ID
+    order.stripePaymentIntentId = paymentIntent.id;
 
+    await order.save();
+
+    // 6. Return only what the client needs
     return {
       success: true,
 
-      items: validatedItems.items,
+      orderId: order._id.toString(),
 
-      subtotal: orderTotal.subtotal,
-      tax: orderTotal.tax,
-      total: orderTotal.total,
+      clientSecret: paymentIntent.client_secret,
 
-      pickupDate: input.pickupDate,
-      pickupTime: input.pickupTime,
+      subtotal: validated.subtotal,
+      tax,
+      total,
+
+      pickupDate,
+      pickupTime,
     };
   } catch (error) {
     console.error("Checkout error:", error);

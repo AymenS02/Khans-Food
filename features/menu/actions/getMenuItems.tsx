@@ -1,13 +1,13 @@
 "use server";
 
 import { connectToDatabase } from "@/lib/mongodb";
-import Menu from "@/models/Menu";
+import Menu from "@/models/MenuItem";
 
 export async function getMenuItems() {
   await connectToDatabase();
 
   const items = await Menu.find({
-    isAvailable: true,
+    available: true,
   })
     .sort({
       category: 1,

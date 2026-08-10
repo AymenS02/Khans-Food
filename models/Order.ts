@@ -30,7 +30,7 @@ export interface IOrderItem {
 
 export interface IOrder extends Document {
   customer?: Types.ObjectId;
-  
+
   orderType: OrderType;
 
   items: IOrderItem[];
@@ -46,6 +46,7 @@ export interface IOrder extends Document {
   notes?: string;
 
   subtotal: number;
+  taxRate: number;
   tax: number;
   total: number;
 
@@ -68,7 +69,7 @@ const OrderItemSchema = new Schema<IOrderItem>(
   {
     menuItem: {
       type: Schema.Types.ObjectId,
-      ref: "Menu",
+      ref: "MenuItem",
       required: true,
     },
 
@@ -166,6 +167,12 @@ const OrderSchema = new Schema<IOrder>(
       min: 0,
     },
 
+    taxRate: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
     tax: {
       type: Number,
       required: true,
@@ -228,6 +235,12 @@ const OrderSchema = new Schema<IOrder>(
     timestamps: true,
   }
 );
+
+// Common query patterns
+OrderSchema.index({ customer: 1, createdAt: -1 });
+OrderSchema.index({ orderStatus: 1 });
+OrderSchema.index({ paymentStatus: 1 });
+OrderSchema.index({ pickupDate: 1 });
 
 const Order: Model<IOrder> =
   mongoose.models.Order ||

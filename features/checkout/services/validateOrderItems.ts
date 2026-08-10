@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import Menu from "@/models/Menu";
+import Menu from "@/models/MenuItem";
 import { connectToDatabase } from "@/lib/mongodb";
 
 export interface CartItemInput {
@@ -47,7 +47,7 @@ export async function validateOrderItems(
 
   const menuItems = await Menu.find({
     _id: { $in: menuItemIds },
-    isAvailable: true,
+    available: true,
   }).lean();
 
   if (menuItems.length !== cartItems.length) {

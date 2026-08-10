@@ -11,5 +11,5 @@ export interface MenuItem {
 
   category: string;
 
-  isAvailable: boolean;
+  available: boolean;
 }
