@@ -1,19 +1,6 @@
 import { z } from "zod";
 
 export const checkoutSchema = z.object({
-  items: z
-    .array(
-      z.object({
-        menuItemId: z.string().min(1, "Menu item is required."),
-
-        quantity: z
-          .number()
-          .int("Quantity must be a whole number.")
-          .min(1, "Quantity must be at least 1."),
-      })
-    )
-    .min(1, "Your cart cannot be empty."),
-
   pickupDate: z
     .string()
     .min(1, "Pickup date is required."),
@@ -48,8 +35,12 @@ export const checkoutSchema = z.object({
   notes: z
     .string()
     .trim()
-    .max(500, "Notes cannot exceed 500 characters.")
+    .max(
+      500,
+      "Notes cannot exceed 500 characters."
+    )
     .optional(),
 });
 
-export type CheckoutInput = z.infer<typeof checkoutSchema>;
+export type CheckoutFormData =
+  z.infer<typeof checkoutSchema>;

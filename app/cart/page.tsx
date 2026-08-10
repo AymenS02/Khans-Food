@@ -1,6 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/stores/cartStore";
+import Link from "next/link";
 
 export default function CartPage() {
   const items = useCartStore((state) => state.items);
@@ -26,7 +27,9 @@ export default function CartPage() {
       <h1 className="text-4xl font-bold">
         Shopping Cart
       </h1>
-
+      <Link href="/checkout" className="mt-6 inline-block rounded bg-primary px-6 py-3 text-lg font-semibold text-white hover:bg-primary/90">
+        Proceed to Checkout
+      </Link>
       {/* we'll add the UI next */}
     </main>
   );

@@ -4,3 +4,4 @@ export interface BusinessHours {
   closingTime: string;
   cutoffTime: string;
 }
+

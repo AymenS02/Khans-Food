@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useCartStore } from "@/stores/cartStore";
 
 import {
   checkoutSchema,
@@ -26,10 +27,60 @@ export default function CheckoutForm() {
     },
   });
 
-  const onSubmit = (data: CheckoutFormData) => {
-    console.log("Checkout data:", data);
-  };
 
+  const items = useCartStore(
+    (state) => state.items
+  );
+
+  const onSubmit = async (
+    data: CheckoutFormData
+  ) => {
+    const cartItems = items.map((item) => ({
+      menuItemId: item.id,
+      quantity: item.quantity,
+    }));
+
+    if (cartItems.length === 0) {
+      console.error("Your cart is empty.");
+      return;
+    }
+
+    const response = await fetch(
+      "/api/checkout",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          items: cartItems,
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error(
+        result.error ??
+          "Unable to create checkout."
+      );
+
+      return;
+    }
+
+    sessionStorage.setItem(
+      "checkoutPayment",
+      JSON.stringify({
+        orderId: result.orderId,
+        clientSecret: result.clientSecret,
+      })
+    );
+
+    window.location.href ="/checkout/payment";
+  };
+  
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}

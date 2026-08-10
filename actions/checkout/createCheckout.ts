@@ -41,10 +41,9 @@ export async function createCheckout(
       customerId,
     } = input;
 
-    // 1. Validate cart against the database
-    const validated = await validateOrderItems(items);
+    const validated =
+      await validateOrderItems(items);
 
-    // 2. Calculate totals on the server
     const taxRate = 0.13;
 
     const tax = Number(
@@ -57,7 +56,6 @@ export async function createCheckout(
 
     await connectToDatabase();
 
-    // 3. Create the order
     const order = await Order.create({
       customer: customerId
         ? new Types.ObjectId(customerId)
@@ -86,7 +84,6 @@ export async function createCheckout(
       paymentStatus: "pending",
     });
 
-    // 4. Create Stripe PaymentIntent
     const paymentIntent =
       await stripe.paymentIntents.create({
         amount: Math.round(total * 100),
@@ -97,20 +94,21 @@ export async function createCheckout(
         },
 
         receipt_email: email,
+
+        automatic_payment_methods: {
+          enabled: true,
+        },
       });
 
-    // 5. Save Stripe PaymentIntent ID
-    order.stripePaymentIntentId = paymentIntent.id;
-
-    await order.save();
-
-    // 6. Return only what the client needs
     return {
       success: true,
 
       orderId: order._id.toString(),
 
-      clientSecret: paymentIntent.client_secret,
+      clientSecret:
+        paymentIntent.client_secret,
+
+      items: validated.items,
 
       subtotal: validated.subtotal,
       tax,
@@ -120,7 +118,10 @@ export async function createCheckout(
       pickupTime,
     };
   } catch (error) {
-    console.error("Checkout error:", error);
+    console.error(
+      "Checkout error:",
+      error
+    );
 
     return {
       success: false,
