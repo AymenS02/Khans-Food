@@ -39,13 +39,13 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
 
   return (
     <div className="fixed top-0 left-1/2 z-50 w-full -translate-x-1/2">
-      <div className="relative mx-auto w-[90%] md:min-w-[30%] shadow-2xl">
+      <div className="relative mx-auto md:w-fit w-[90%] shadow-2xl">
         {/* Navbar */}
         <nav
           className="rounded-b-[18px] bg-foreground px-5 text-white transition-all duration-300"
         >
           {/* Top navbar */}
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-16 items-center justify-between gap-16">
 
             {/* Logo */}
             <Link
