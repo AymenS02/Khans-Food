@@ -6,29 +6,18 @@ import { stripe } from "@/lib/stripe";
 
 import {
   validateOrderItems,
-  type CartItemInput,
 } from "@/features/checkout/services/validateOrderItems";
 
 import { validatePickup } from "@/features/checkout/services/validatePickup";
 
 import { getBusinessHoursForDate } from "@/features/checkout/services/getBusinessHoursForDate";
 
-interface CreateCheckoutInput {
-  items: CartItemInput[];
+import type { CheckoutRequest } from "@/features/checkout/validators/checkoutRequestSchema";
 
-  pickupDate: string;
-  pickupTime: string;
-
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-
-  notes?: string;
-  checkoutAttemptId: string;
-
-  customerId?: string;
-}
+type CreateCheckoutInput =
+  CheckoutRequest & {
+    customerId?: string;
+  };
 
 export async function createCheckout(
   input: CreateCheckoutInput

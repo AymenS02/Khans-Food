@@ -20,7 +20,7 @@ const page = () => {
     },
     {
       name: "View Business Settings",
-      path: "business-settings",
+      path: "settings",
     },
     {
       name: "View Customer Info",
