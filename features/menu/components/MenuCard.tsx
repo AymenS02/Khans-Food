@@ -3,35 +3,38 @@
 import Image from "next/image";
 import { useCartStore } from "@/stores/cartStore";
 
-import { MenuItem } from "../types/menu";
+import type { MenuItem } from "../types/menu";
 
 interface MenuCardProps {
-    item: MenuItem;
+  item: MenuItem;
 }
 
-export default function MenuCard({ item }: MenuCardProps) {
-
-  const addItem = useCartStore((state) => state.addItem);
+export default function MenuCard({
+  item,
+}: MenuCardProps) {
+  const addItem = useCartStore(
+    (state) => state.addItem
+  );
 
   return (
     <article className="overflow-hidden rounded-2xl bg-white shadow-sm">
       {/* Image */}
-      <div className="relative aspect-[4/3] bg-muted">
-        {item.image ? (
+      {item.image ? (
+        <div className="relative aspect-[4/3] w-full">
           <Image
             src={item.image}
             alt={item.name}
             fill
             className="object-cover"
           />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <span className="text-sm text-foreground/50">
-              Image coming soon
-            </span>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex aspect-[4/3] items-center justify-center bg-background">
+          <p className="text-sm text-foreground/50">
+            Image coming soon
+          </p>
+        </div>
+      )}
 
       {/* Content */}
       <div className="p-5">
@@ -45,9 +48,11 @@ export default function MenuCard({ item }: MenuCardProps) {
           </span>
         </div>
 
-        <p className="mt-2 text-sm leading-6 text-foreground/60">
-          {item.description}
-        </p>
+        {item.description && (
+          <p className="mt-2 text-sm leading-6 text-foreground/60">
+            {item.description}
+          </p>
+        )}
 
         <button
           type="button"

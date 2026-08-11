@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCartStore } from "@/stores/cartStore";
@@ -9,11 +14,20 @@ import {
   CheckoutFormData,
 } from "../validators/checkoutSchema";
 
+import { formatPickupTime } from "../utils/formatPickupTime";
+
 export default function CheckoutForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setError,
+    clearErrors,
+    setValue,
+    watch,
+    formState: {
+      errors,
+      isSubmitting,
+    },
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
@@ -27,64 +41,303 @@ export default function CheckoutForm() {
     },
   });
 
+  const pickupDate =
+    watch("pickupDate");
+
+  const [
+    availablePickupTimes,
+    setAvailablePickupTimes,
+  ] = useState<string[]>([]);
+
+  const [
+    isLoadingPickupTimes,
+    setIsLoadingPickupTimes,
+  ] = useState(false);
+
+  const [
+    pickupTimesError,
+    setPickupTimesError,
+  ] = useState<string | null>(
+    null
+  );
 
   const items = useCartStore(
     (state) => state.items
   );
 
+  useEffect(() => {
+    if (!pickupDate) {
+      setAvailablePickupTimes([]);
+      setPickupTimesError(null);
+
+      setValue(
+        "pickupTime",
+        ""
+      );
+
+      return;
+    }
+
+    const controller =
+      new AbortController();
+
+    async function loadPickupTimes() {
+      try {
+        setIsLoadingPickupTimes(
+          true
+        );
+
+        setPickupTimesError(null);
+
+        /*
+        * Clear the previously selected
+        * time whenever the date changes.
+        */
+        setValue(
+          "pickupTime",
+          ""
+        );
+
+        const response =
+          await fetch(
+            `/api/pickup-times?date=${encodeURIComponent(
+              pickupDate
+            )}`,
+            {
+              signal:
+                controller.signal,
+            }
+          );
+
+        const result =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !result.success
+        ) {
+          setAvailablePickupTimes(
+            []
+          );
+
+          setPickupTimesError(
+            result.error ??
+              "Unable to load pickup times."
+          );
+
+          return;
+        }
+
+        setAvailablePickupTimes(
+          result.times
+        );
+
+        if (
+          result.times.length === 0
+        ) {
+          setPickupTimesError(
+            result.message ??
+              "No pickup times are available."
+          );
+        }
+      } catch (error) {
+        if (
+          error instanceof DOMException &&
+          error.name ===
+            "AbortError"
+        ) {
+          return;
+        }
+
+        console.error(
+          "Unable to load pickup times:",
+          error
+        );
+
+        setAvailablePickupTimes(
+          []
+        );
+
+        setPickupTimesError(
+          "Unable to load pickup times."
+        );
+      } finally {
+        setIsLoadingPickupTimes(
+          false
+        );
+      }
+    }
+
+    loadPickupTimes();
+
+    return () => {
+      controller.abort();
+    };
+  }, [
+    pickupDate,
+    setValue,
+  ]);
+
   const onSubmit = async (
     data: CheckoutFormData
   ) => {
+
+    clearErrors("root");
+
     const cartItems = items.map((item) => ({
       menuItemId: item.id,
       quantity: item.quantity,
     }));
 
     if (cartItems.length === 0) {
-      console.error("Your cart is empty.");
+      setError("root", {
+        type: "server",
+        message: "Your cart is empty.",
+      });
+
       return;
     }
 
-    const response = await fetch(
-      "/api/checkout",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          items: cartItems,
-        }),
-      }
-    );
+    /*
+     * Represents the exact checkout the
+     * customer is currently trying to make.
+     */
+    const checkoutPayload = {
+      ...data,
+      items: cartItems,
+    };
 
-    const result = await response.json();
+    /*
+     * We use this to determine whether
+     * the checkout changed since the
+     * previous submission.
+     */
+    const checkoutSignature =
+      JSON.stringify(checkoutPayload);
 
-    if (!response.ok || !result.success) {
-      console.error(
-        result.error ??
-          "Unable to create checkout."
+    /*
+     * Try to reuse an existing checkout
+     * attempt if this exact checkout has
+     * already been submitted.
+     */
+    const storedAttempt =
+      sessionStorage.getItem(
+        "checkoutAttempt"
       );
 
-      return;
+    let checkoutAttemptId: string;
+
+    if (storedAttempt) {
+      try {
+        const parsed = JSON.parse(
+          storedAttempt
+        );
+
+        if (
+          parsed.signature ===
+            checkoutSignature &&
+          typeof parsed.id === "string"
+        ) {
+          // Same checkout attempt.
+          checkoutAttemptId = parsed.id;
+        } else {
+          // Checkout changed.
+          checkoutAttemptId =
+            crypto.randomUUID();
+        }
+      } catch {
+        // Stored data was invalid.
+        checkoutAttemptId =
+          crypto.randomUUID();
+      }
+    } else {
+      // First checkout attempt.
+      checkoutAttemptId =
+        crypto.randomUUID();
     }
 
+    /*
+     * Save the attempt BEFORE sending
+     * the request.
+     *
+     * If the request fails and gets
+     * retried, we reuse this same ID.
+     */
     sessionStorage.setItem(
-      "checkoutPayment",
+      "checkoutAttempt",
       JSON.stringify({
-        orderId: result.orderId,
-        clientSecret: result.clientSecret,
+        id: checkoutAttemptId,
+        signature: checkoutSignature,
       })
     );
 
-    window.location.href ="/checkout/payment";
+    try {
+      const response = await fetch(
+        "/api/checkout",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            ...checkoutPayload,
+            checkoutAttemptId,
+          }),
+        }
+      );
+
+      const result =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !result.success
+      ) {
+        setError("root", {
+          type: "server",
+          message:
+            result.error ??
+            "Unable to create checkout.",
+        });
+
+        return;
+      }
+      /*
+       * Save what the payment page
+       * needs to initialize Stripe.
+       */
+      sessionStorage.setItem(
+        "checkoutPayment",
+        JSON.stringify({
+          orderId: result.orderId,
+          clientSecret:
+            result.clientSecret,
+        })
+      );
+
+      window.location.href =
+        "/checkout/payment";
+    } catch (error) {
+      console.error(
+        "Checkout request failed:",
+        error
+      );
+
+      setError("root", {
+        type: "server",
+        message:
+          "Something went wrong. Please try again.",
+      });
+    }
   };
-  
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-8"
+      className="space-y-6"
     >
       {/* Customer Information */}
       <section className="rounded-2xl bg-white p-6 shadow-sm">
@@ -111,7 +364,10 @@ export default function CheckoutForm() {
 
             {errors.firstName && (
               <p className="mt-2 text-sm text-accent">
-                {errors.firstName.message}
+                {
+                  errors.firstName
+                    .message
+                }
               </p>
             )}
           </div>
@@ -134,7 +390,10 @@ export default function CheckoutForm() {
 
             {errors.lastName && (
               <p className="mt-2 text-sm text-accent">
-                {errors.lastName.message}
+                {
+                  errors.lastName
+                    .message
+                }
               </p>
             )}
           </div>
@@ -206,13 +465,18 @@ export default function CheckoutForm() {
             <input
               id="pickupDate"
               type="date"
-              {...register("pickupDate")}
+              {...register(
+                "pickupDate"
+              )}
               className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
             />
 
             {errors.pickupDate && (
               <p className="mt-2 text-sm text-accent">
-                {errors.pickupDate.message}
+                {
+                  errors.pickupDate
+                    .message
+                }
               </p>
             )}
           </div>
@@ -226,16 +490,60 @@ export default function CheckoutForm() {
               Pickup Time
             </label>
 
-            <input
+            <select
               id="pickupTime"
-              type="time"
               {...register("pickupTime")}
-              className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
-            />
+              disabled={
+                !pickupDate ||
+                isLoadingPickupTimes ||
+                availablePickupTimes.length === 0
+              }
+              className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">
+                {isLoadingPickupTimes
+                  ? "Loading times..."
+                  : !pickupDate
+                    ? "Select a date first"
+                    : availablePickupTimes.length === 0
+                      ? "No times available"
+                      : "Select a pickup time"}
+              </option>
+
+              {availablePickupTimes.map((time) => (
+                <option
+                  key={time}
+                  value={time}
+                >
+                  {formatPickupTime(time)}
+                </option>
+              ))}
+            </select>
 
             {errors.pickupTime && (
               <p className="mt-2 text-sm text-accent">
                 {errors.pickupTime.message}
+              </p>
+            )}
+
+            {pickupTimesError && (
+              <p className="mt-2 text-sm text-accent">
+                {pickupTimesError}
+              </p>
+            )}
+
+            {errors.pickupTime && (
+              <p className="mt-2 text-sm text-accent">
+                {
+                  errors.pickupTime
+                    .message
+                }
+              </p>
+            )}
+
+            {pickupTimesError && (
+              <p className="mt-2 text-sm text-accent">
+                {pickupTimesError}
               </p>
             )}
           </div>
@@ -265,12 +573,26 @@ export default function CheckoutForm() {
           )}
         </div>
       </section>
+      
+      {errors.root?.message && (
+        <div
+          role="alert"
+          className="rounded-xl border border-accent/20 bg-accent/10 px-4 py-3"
+        >
+          <p className="text-sm font-medium text-accent">
+            {errors.root.message}
+          </p>
+        </div>
+      )}
 
       <button
         type="submit"
-        className="w-full rounded-xl bg-primary px-6 py-4 font-bold text-white transition hover:opacity-90"
+        disabled={isSubmitting}
+        className="w-full rounded-xl bg-primary px-6 py-4 font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Continue to Payment
+        {isSubmitting
+          ? "Processing..."
+          : "Continue to Payment"}
       </button>
     </form>
   );

@@ -10,6 +10,14 @@ export default function ClearCart() {
 
   useEffect(() => {
     clearCart();
+
+    sessionStorage.removeItem(
+      "checkoutAttempt"
+    );
+
+    sessionStorage.removeItem(
+      "checkoutPayment"
+    );
   }, [clearCart]);
 
   return null;

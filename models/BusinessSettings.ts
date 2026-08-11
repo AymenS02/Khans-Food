@@ -1,53 +1,55 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, {
+  Document,
+  Model,
+  Schema,
+} from "mongoose";
 
-export interface IBusinessHour {
-  dayOfWeek: number;
-
+export interface IDayHours {
   isOpen: boolean;
-
-  openTime?: string;
-  closeTime?: string;
+  openingTime: string;
+  closingTime: string;
 }
 
-export interface IBusinessSettings extends Document {
+export interface IBusinessSettings
+  extends Document {
   businessName: string;
+  
+  timezone: string;
 
-  businessHours: IBusinessHour[];
+  weeklyHours: {
+    sunday: IDayHours;
+    monday: IDayHours;
+    tuesday: IDayHours;
+    wednesday: IDayHours;
+    thursday: IDayHours;
+    friday: IDayHours;
+    saturday: IDayHours;
+  };
 
-  regularOrderCutoffMinutes: number;
-
-  cateringNoticeDays: number;
-
-  currency: string;
-
-  taxRate: number;
+  sameDayCutoffTime: string;
 
   createdAt: Date;
   updatedAt: Date;
 }
 
-const BusinessHourSchema = new Schema<IBusinessHour>(
+const DayHoursSchema = new Schema(
   {
-    dayOfWeek: {
-      type: Number,
-      required: true,
-      min: 0,
-      max: 6,
-    },
-
     isOpen: {
       type: Boolean,
+      required: true,
       default: true,
     },
 
-    openTime: {
+    openingTime: {
       type: String,
-      trim: true,
+      required: true,
+      default: "11:00",
     },
 
-    closeTime: {
+    closingTime: {
       type: String,
-      trim: true,
+      required: true,
+      default: "20:00",
     },
   },
   {
@@ -56,7 +58,7 @@ const BusinessHourSchema = new Schema<IBusinessHour>(
 );
 
 const BusinessSettingsSchema =
-  new Schema<IBusinessSettings>(
+  new Schema(
     {
       businessName: {
         type: String,
@@ -65,40 +67,53 @@ const BusinessSettingsSchema =
         default: "Khans Food",
       },
 
-      businessHours: {
-        type: [BusinessHourSchema],
-        required: true,
-        default: [],
-      },
-
-      regularOrderCutoffMinutes: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 60,
-      },
-
-      cateringNoticeDays: {
-        type: Number,
-        required: true,
-        min: 3,
-        default: 3,
-      },
-
-      currency: {
+      timezone: {
         type: String,
         required: true,
-        uppercase: true,
-        trim: true,
-        default: "CAD",
+        default: "America/Toronto",
+      },
+      
+      weeklyHours: {
+        sunday: {
+          type: DayHoursSchema,
+          required: true,
+        },
+
+        monday: {
+          type: DayHoursSchema,
+          required: true,
+        },
+
+        tuesday: {
+          type: DayHoursSchema,
+          required: true,
+        },
+
+        wednesday: {
+          type: DayHoursSchema,
+          required: true,
+        },
+
+        thursday: {
+          type: DayHoursSchema,
+          required: true,
+        },
+
+        friday: {
+          type: DayHoursSchema,
+          required: true,
+        },
+
+        saturday: {
+          type: DayHoursSchema,
+          required: true,
+        },
       },
 
-      taxRate: {
-        type: Number,
+      sameDayCutoffTime: {
+        type: String,
         required: true,
-        min: 0,
-        max: 1,
-        default: 0,
+        default: "17:00",
       },
     },
     {

@@ -53,6 +53,7 @@ export interface IOrder extends Document {
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
 
+  checkoutAttemptId?: string;
   stripePaymentIntentId?: string;
 
   catering?: {
@@ -209,6 +210,11 @@ const OrderSchema = new Schema<IOrder>(
       default: "pending",
     },
 
+    checkoutAttemptId: {
+      type: String,
+      trim: true,
+    },
+
     stripePaymentIntentId: {
       type: String,
       sparse: true,
@@ -241,6 +247,13 @@ OrderSchema.index({ customer: 1, createdAt: -1 });
 OrderSchema.index({ orderStatus: 1 });
 OrderSchema.index({ paymentStatus: 1 });
 OrderSchema.index({ pickupDate: 1 });
+OrderSchema.index(
+  { checkoutAttemptId: 1 },
+  {
+    unique: true,
+    sparse: true,
+  }
+);
 
 const Order: Model<IOrder> =
   mongoose.models.Order ||

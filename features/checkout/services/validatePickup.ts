@@ -4,6 +4,8 @@ interface ValidatePickupParams {
   pickupDate: string;
   pickupTime: string;
   businessHours: BusinessHours;
+  timeZone: string;
+  now?: Date;
 }
 
 interface ValidationResult {
@@ -15,6 +17,8 @@ export function validatePickup({
   pickupDate,
   pickupTime,
   businessHours,
+  timeZone,
+  now = new Date(),
 }: ValidatePickupParams): ValidationResult {
   if (!businessHours.isOpen) {
     return {
@@ -23,73 +27,114 @@ export function validatePickup({
     };
   }
 
-  const currentDate = new Date();
-
-  const requestedDate = new Date(`${pickupDate}T00:00:00`);
-
-  if (Number.isNaN(requestedDate.getTime())) {
+  if (!isValidDateString(pickupDate)) {
     return {
       valid: false,
       error: "Invalid pickup date.",
     };
   }
 
-  const today = new Date();
+  const pickupMinutes =
+    convertTimeToMinutes(pickupTime);
 
-  today.setHours(0, 0, 0, 0);
+  const openingMinutes =
+    convertTimeToMinutes(
+      businessHours.openingTime
+    );
 
-  if (requestedDate < today) {
+  const closingMinutes =
+    convertTimeToMinutes(
+      businessHours.closingTime
+    );
+
+  if (pickupMinutes === null) {
     return {
       valid: false,
-      error: "Pickup date cannot be in the past.",
+      error: "Invalid pickup time.",
     };
   }
 
-  const pickupMinutes = convertTimeToMinutes(pickupTime);
-  const openingMinutes = convertTimeToMinutes(
-    businessHours.openingTime
-  );
-  const closingMinutes = convertTimeToMinutes(
-    businessHours.closingTime
-  );
+  if (
+    openingMinutes === null ||
+    closingMinutes === null
+  ) {
+    throw new Error(
+      "Business hours are configured incorrectly."
+    );
+  }
 
-  if (pickupMinutes < openingMinutes) {
+  const current =
+    getCurrentTimeInZone(
+      now,
+      timeZone
+    );
+
+  /*
+   * YYYY-MM-DD strings can safely
+   * be compared chronologically.
+   */
+  if (pickupDate < current.date) {
     return {
       valid: false,
-      error: "Pickup time is before business hours.",
+      error:
+        "Pickup date cannot be in the past.",
     };
   }
 
-  if (pickupMinutes > closingMinutes) {
+  if (
+    pickupMinutes < openingMinutes
+  ) {
     return {
       valid: false,
-      error: "Pickup time is after business hours.",
+      error:
+        "Pickup time is before business hours.",
+    };
+  }
+
+  if (
+    pickupMinutes > closingMinutes
+  ) {
+    return {
+      valid: false,
+      error:
+        "Pickup time is after business hours.",
     };
   }
 
   const isToday =
-    requestedDate.getTime() === today.getTime();
+    pickupDate === current.date;
 
   if (isToday) {
-    const currentMinutes =
-      currentDate.getHours() * 60 +
-      currentDate.getMinutes();
+    const cutoffMinutes =
+      convertTimeToMinutes(
+        businessHours.cutoffTime
+      );
 
-    const cutoffMinutes = convertTimeToMinutes(
-      businessHours.cutoffTime
-    );
+    if (cutoffMinutes === null) {
+      throw new Error(
+        "Business cutoff time is configured incorrectly."
+      );
+    }
 
-    if (currentMinutes >= cutoffMinutes) {
+    if (
+      current.minutes >=
+      cutoffMinutes
+    ) {
       return {
         valid: false,
-        error: "The cutoff time for same-day orders has passed.",
+        error:
+          "The cutoff time for same-day orders has passed.",
       };
     }
 
-    if (pickupMinutes <= currentMinutes) {
+    if (
+      pickupMinutes <=
+      current.minutes
+    ) {
       return {
         valid: false,
-        error: "Pickup time must be later than the current time.",
+        error:
+          "Pickup time must be later than the current time.",
       };
     }
   }
@@ -99,8 +144,118 @@ export function validatePickup({
   };
 }
 
-function convertTimeToMinutes(time: string): number {
-  const [hours, minutes] = time.split(":").map(Number);
+function convertTimeToMinutes(
+  time: string
+): number | null {
+  const match =
+    /^(\d{2}):(\d{2})$/.exec(time);
+
+  if (!match) {
+    return null;
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+
+  if (
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return null;
+  }
 
   return hours * 60 + minutes;
+}
+
+function isValidDateString(
+  date: string
+): boolean {
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})$/.exec(
+      date
+    );
+
+  if (!match) {
+    return false;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  const parsed = new Date(
+    Date.UTC(
+      year,
+      month - 1,
+      day
+    )
+  );
+
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() ===
+      month - 1 &&
+    parsed.getUTCDate() === day
+  );
+}
+
+function getCurrentTimeInZone(
+  date: Date,
+  timeZone: string
+) {
+  const formatter =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      }
+    );
+
+  const parts =
+    formatter.formatToParts(date);
+
+  const getPart = (
+    type: Intl.DateTimeFormatPartTypes
+  ) =>
+    parts.find(
+      (part) => part.type === type
+    )?.value;
+
+  const year = getPart("year");
+  const month = getPart("month");
+  const day = getPart("day");
+
+  const hour = Number(
+    getPart("hour")
+  );
+
+  const minute = Number(
+    getPart("minute")
+  );
+
+  if (
+    !year ||
+    !month ||
+    !day ||
+    Number.isNaN(hour) ||
+    Number.isNaN(minute)
+  ) {
+    throw new Error(
+      "Unable to determine current business time."
+    );
+  }
+
+  return {
+    date: `${year}-${month}-${day}`,
+    minutes:
+      hour * 60 + minute,
+  };
 }
