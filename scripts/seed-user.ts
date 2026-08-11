@@ -19,7 +19,7 @@ async function seedUser() {
     console.log("Connected to MongoDB");
 
     const existingUser = await User.findOne({
-      email: "admin@khansfood.com",
+      email: "aymenshoteri@gmail.com",
     }).select("+password");
 
     if (existingUser) {
@@ -30,12 +30,12 @@ async function seedUser() {
     const password = await hashPassword("123456");
 
     await User.create({
-      firstName: "Khans",
-      lastName: "Admin",
-      email: "admin@khansfood.com",
-      phone: "0000000000",
+      firstName: "Firsttest",
+      lastName: "Lasttest",
+      email: "aymenshoteri@gmail.com",
+      phone: "2896891515",
       password,
-      role: "admin",
+      role: "customer",
       isActive: true,
       emailVerified: true,
     });

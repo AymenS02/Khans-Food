@@ -12,7 +12,7 @@ const page = () => {
     },
     {
       name: "View Menu Orders",
-      path: "menu-orders",
+      path: "orders",
     },
     {
       name: "View Catering Orders",

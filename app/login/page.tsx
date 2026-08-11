@@ -27,7 +27,7 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginInput) {
     setServerError(null);
-
+    
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,

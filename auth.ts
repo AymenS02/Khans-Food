@@ -51,7 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!user.isActive) {
           return null;
         }
-
+        console.log(password, user.password);
         const passwordIsValid = await verifyPassword(
           password,
           user.password
@@ -60,7 +60,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!passwordIsValid) {
           return null;
         }
-
         return {
           id: user._id.toString(),
           email: user.email,

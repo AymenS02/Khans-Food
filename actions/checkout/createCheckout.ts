@@ -85,20 +85,30 @@ export async function createCheckout(
     });
 
     const paymentIntent =
-      await stripe.paymentIntents.create({
-        amount: Math.round(total * 100),
-        currency: "cad",
+      await stripe.paymentIntents.create(
+        {
+          amount: Math.round(total * 100),
+          currency: "cad",
 
-        metadata: {
-          orderId: order._id.toString(),
+          metadata: {
+            orderId: order._id.toString(),
+          },
+
+          receipt_email: email,
+
+          automatic_payment_methods: {
+            enabled: true,
+          },
         },
+        {
+          idempotencyKey: `order-${order._id.toString()}`,
+        }
+      );
 
-        receipt_email: email,
+    order.stripePaymentIntentId =
+      paymentIntent.id;
 
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
+    await order.save();
 
     return {
       success: true,
