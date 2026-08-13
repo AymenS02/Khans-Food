@@ -1,82 +1,284 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, {
+  Document,
+  Model,
+  Schema,
+  Types,
+} from "mongoose";
 
-export type CateringOrderMethod =
+export type CateringRequestStatus =
+  | "submitted"
+  | "reviewing"
+  | "approved"
+  | "rejected"
+  | "cancelled";
+
+export type CateringSelectionType =
   | "package"
   | "custom";
 
-export interface ICateringOrder extends Document {
-  orderId: mongoose.Types.ObjectId;
+export type CateringPricingType =
+  | "flat"
+  | "per_person";
 
-  method: CateringOrderMethod;
+export interface ICateringCustomItem {
+  cateringItem: Types.ObjectId;
 
-  packageId?: mongoose.Types.ObjectId;
+  name: string;
 
-  guestCount?: number;
+  price: number;
 
-  eventType?: string;
+  pricingType: CateringPricingType;
 
-  eventName?: string;
+  quantity: number;
+}
 
-  specialInstructions?: string;
+export interface ICateringRequest
+  extends Document {
+  customer?: Types.ObjectId;
+
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+
+  eventDate: Date;
+  guestCount: number;
+
+  selectionType: CateringSelectionType;
+
+  package?: {
+    packageId: Types.ObjectId;
+
+    name: string;
+
+    price: number;
+
+    pricingType: CateringPricingType;
+  };
+
+  customItems: ICateringCustomItem[];
+
+  notes?: string;
+  adminNotes?: string;
+
+  status: CateringRequestStatus;
+
+  quotedSubtotal?: number;
+  taxRate?: number;
+  tax?: number;
+  quotedTotal?: number;
+
+  order?: Types.ObjectId;
 
   createdAt: Date;
   updatedAt: Date;
 }
 
-const CateringOrderSchema = new Schema<ICateringOrder>(
-  {
-    orderId: {
-      type: Schema.Types.ObjectId,
-      ref: "Order",
-      required: true,
-      unique: true,
+const CateringCustomItemSchema =
+  new Schema(
+    {
+      cateringItem: {
+        type: Schema.Types.ObjectId,
+        ref: "CateringItem",
+        required: true,
+      },
+
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      price: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+
+      pricingType: {
+        type: String,
+        enum: [
+          "flat",
+          "per_person",
+        ],
+        required: true,
+      },
+
+      quantity: {
+        type: Number,
+        required: true,
+        min: 1,
+      },
     },
-
-    method: {
-      type: String,
-      enum: ["package", "custom"],
-      required: true,
-    },
-
-    packageId: {
-      type: Schema.Types.ObjectId,
-      ref: "CateringPackage",
-    },
-
-    guestCount: {
-      type: Number,
-      min: 1,
-    },
-
-    eventType: {
-      type: String,
-      trim: true,
-    },
-
-    eventName: {
-      type: String,
-      trim: true,
-    },
-
-    specialInstructions: {
-      type: String,
-      trim: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-CateringOrderSchema.index({
-  packageId: 1,
-});
-
-const CateringOrder: Model<ICateringOrder> =
-  mongoose.models.CateringOrder ||
-  mongoose.model<ICateringOrder>(
-    "CateringOrder",
-    CateringOrderSchema
+    {
+      _id: false,
+    }
   );
 
-export default CateringOrder;
+const CateringRequestSchema =
+  new Schema(
+    {
+      customer: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: false,
+      },
+
+      firstName: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      lastName: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      email: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+      },
+
+      phone: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      eventDate: {
+        type: Date,
+        required: true,
+      },
+
+      guestCount: {
+        type: Number,
+        required: true,
+        min: 1,
+      },
+
+      selectionType: {
+        type: String,
+        enum: [
+          "package",
+          "custom",
+        ],
+        required: true,
+      },
+
+      package: {
+        packageId: {
+          type: Schema.Types.ObjectId,
+          ref: "CateringPackage",
+        },
+
+        name: {
+          type: String,
+          trim: true,
+        },
+
+        price: {
+          type: Number,
+          min: 0,
+        },
+
+        pricingType: {
+          type: String,
+          enum: [
+            "flat",
+            "per_person",
+          ],
+        },
+      },
+
+      customItems: {
+        type: [
+          CateringCustomItemSchema,
+        ],
+
+        default: [],
+      },
+
+      notes: {
+        type: String,
+        trim: true,
+        maxlength: 1000,
+      },
+
+      adminNotes: {
+        type: String,
+        trim: true,
+        maxlength: 2000,
+      },
+
+      status: {
+        type: String,
+
+        enum: [
+          "submitted",
+          "reviewing",
+          "approved",
+          "rejected",
+          "cancelled",
+        ],
+
+        default: "submitted",
+
+        index: true,
+      },
+
+      quotedSubtotal: {
+        type: Number,
+        min: 0,
+      },
+
+      taxRate: {
+        type: Number,
+        min: 0,
+      },
+
+      tax: {
+        type: Number,
+        min: 0,
+      },
+
+      quotedTotal: {
+        type: Number,
+        min: 0,
+      },
+
+      order: {
+        type: Schema.Types.ObjectId,
+        ref: "Order",
+      },
+    },
+    {
+      timestamps: true,
+    }
+  );
+
+CateringRequestSchema.index({
+  customer: 1,
+  createdAt: -1,
+});
+
+CateringRequestSchema.index({
+  eventDate: 1,
+});
+
+CateringRequestSchema.index({
+  status: 1,
+  createdAt: -1,
+});
+
+const CateringRequest: Model<ICateringRequest> =
+  mongoose.models.CateringRequest ||
+  mongoose.model<ICateringRequest>(
+    "CateringRequest",
+    CateringRequestSchema
+  );
+
+export default CateringRequest;

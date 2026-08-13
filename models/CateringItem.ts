@@ -2,22 +2,13 @@ import mongoose, {
   Document,
   Model,
   Schema,
-  Types,
 } from "mongoose";
 
-export type CateringPackagePricingType =
+export type CateringPricingType =
   | "flat"
   | "per_person";
 
-export interface ICateringPackageItem {
-  cateringItem: Types.ObjectId;
-
-  name: string;
-
-  quantity: number;
-}
-
-export interface ICateringPackage
+export interface ICateringItem
   extends Document {
   name: string;
   slug: string;
@@ -27,48 +18,20 @@ export interface ICateringPackage
 
   price: number;
 
-  pricingType:
-    CateringPackagePricingType;
+  pricingType: CateringPricingType;
 
-  minimumGuests?: number;
-  maximumGuests?: number;
-
-  items: ICateringPackageItem[];
+  category?: string;
 
   available: boolean;
   displayOrder: number;
+
+  minimumQuantity?: number;
 
   createdAt: Date;
   updatedAt: Date;
 }
 
-const CateringPackageItemSchema =
-  new Schema(
-    {
-      cateringItem: {
-        type: Schema.Types.ObjectId,
-        ref: "CateringItem",
-        required: true,
-      },
-
-      name: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-
-      quantity: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-    },
-    {
-      _id: false,
-    }
-  );
-
-const CateringPackageSchema =
+const CateringItemSchema =
   new Schema(
     {
       name: {
@@ -90,7 +53,7 @@ const CateringPackageSchema =
       description: {
         type: String,
         trim: true,
-        maxlength: 1500,
+        maxlength: 1000,
       },
 
       image: {
@@ -115,22 +78,10 @@ const CateringPackageSchema =
         required: true,
       },
 
-      minimumGuests: {
-        type: Number,
-        min: 1,
-      },
-
-      maximumGuests: {
-        type: Number,
-        min: 1,
-      },
-
-      items: {
-        type: [
-          CateringPackageItemSchema,
-        ],
-
-        default: [],
+      category: {
+        type: String,
+        trim: true,
+        maxlength: 100,
       },
 
       available: {
@@ -144,22 +95,27 @@ const CateringPackageSchema =
         default: 0,
         min: 0,
       },
+
+      minimumQuantity: {
+        type: Number,
+        min: 1,
+      },
     },
     {
       timestamps: true,
     }
   );
 
-CateringPackageSchema.index({
+CateringItemSchema.index({
   available: 1,
   displayOrder: 1,
 });
 
-const CateringPackage: Model<ICateringPackage> =
-  mongoose.models.CateringPackage ||
-  mongoose.model<ICateringPackage>(
-    "CateringPackage",
-    CateringPackageSchema
+const CateringItem: Model<ICateringItem> =
+  mongoose.models.CateringItem ||
+  mongoose.model<ICateringItem>(
+    "CateringItem",
+    CateringItemSchema
   );
 
-export default CateringPackage;
+export default CateringItem;

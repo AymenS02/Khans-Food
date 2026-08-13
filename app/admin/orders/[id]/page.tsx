@@ -82,33 +82,32 @@ export default async function AdminOrderPage({
 
           {/* Pickup */}
           <section className="border-b border-black/10 py-6">
-            <h2 className="text-xl font-bold">
-              Pickup
-            </h2>
-
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {order.pickupDate &&
+            order.pickupTime ? (
               <div>
                 <p className="text-sm text-foreground/50">
-                  Date
+                  Pickup
                 </p>
 
                 <p className="mt-1 font-semibold">
                   {new Date(
                     order.pickupDate
                   ).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-foreground/50">
-                  Time
-                </p>
-
-                <p className="mt-1 font-semibold">
+                  {" at "}
                   {order.pickupTime}
                 </p>
               </div>
-            </div>
+            ) : (
+              <div>
+                <p className="text-sm text-foreground/50">
+                  Fulfillment
+                </p>
+
+                <p className="mt-1 font-semibold">
+                  Catering event
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Items */}

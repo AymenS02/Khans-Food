@@ -22,7 +22,7 @@ export type PaymentStatus =
   | "refunded";
 
 export interface IOrderItem {
-  menuItem: Types.ObjectId;
+  menuItem?: Types.ObjectId;
   name: string;
   price: number;
   quantity: number;
@@ -40,8 +40,8 @@ export interface IOrder extends Document {
   email: string;
   phone: string;
 
-  pickupDate: Date;
-  pickupTime: string;
+  pickupDate?: Date;
+  pickupTime?: string;
 
   notes?: string;
 
@@ -57,8 +57,11 @@ export interface IOrder extends Document {
   stripePaymentIntentId?: string;
 
   catering?: {
+    requestId?: Types.ObjectId;
+
     eventDate: Date;
     guestCount: number;
+
     notes?: string;
   };
 
@@ -71,7 +74,7 @@ const OrderItemSchema = new Schema<IOrderItem>(
     menuItem: {
       type: Schema.Types.ObjectId,
       ref: "MenuItem",
-      required: true,
+      required: false,
     },
 
     name: {
@@ -147,13 +150,16 @@ const OrderSchema = new Schema<IOrder>(
 
     pickupDate: {
       type: Date,
-      required: true,
+      required: function () {
+        return this.orderType === "regular";
+      },
     },
 
     pickupTime: {
       type: String,
-      required: true,
-      trim: true,
+      required: function () {
+        return this.orderType === "regular";
+      },
     },
 
     notes: {
@@ -221,6 +227,11 @@ const OrderSchema = new Schema<IOrder>(
     },
 
     catering: {
+      requestId: {
+        type: Schema.Types.ObjectId,
+        ref: "CateringRequest",
+      },
+
       eventDate: {
         type: Date,
       },
@@ -249,6 +260,15 @@ OrderSchema.index({ paymentStatus: 1 });
 OrderSchema.index({ pickupDate: 1 });
 OrderSchema.index(
   { checkoutAttemptId: 1 },
+  {
+    unique: true,
+    sparse: true,
+  }
+);
+OrderSchema.index(
+  {
+    "catering.requestId": 1,
+  },
   {
     unique: true,
     sparse: true,

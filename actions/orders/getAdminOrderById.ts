@@ -47,13 +47,13 @@ export async function getAdminOrderById(
     phone: order.phone,
 
     items: order.items.map((item) => ({
-      menuItem: item.menuItem.toString(),
+      menuItem: item.menuItem?.toString(),
       name: item.name,
       price: item.price,
       quantity: item.quantity,
     })),
 
-    pickupDate: order.pickupDate.toISOString(),
+    pickupDate: order.pickupDate?.toISOString(),
     pickupTime: order.pickupTime,
 
     subtotal: order.subtotal,

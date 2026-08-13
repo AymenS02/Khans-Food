@@ -1,36 +1,45 @@
+import type {
+  OrderStatus,
+  OrderType,
+  PaymentStatus,
+} from "@/models/Order";
+
+export interface OrderItem {
+  menuItem?: string;
+
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface OrderCateringInfo {
+  requestId?: string;
+
+  eventDate: string;
+  guestCount: number;
+
+  notes?: string;
+}
+
 export interface CustomerOrder {
   id: string;
 
-  orderType: "regular" | "catering";
+  orderType: OrderType;
 
-  items: {
-    menuItem: string;
-    name: string;
-    price: number;
-    quantity: number;
-  }[];
+  items: OrderItem[];
 
-  pickupDate: string;
-  pickupTime: string;
+  pickupDate?: string;
+  pickupTime?: string;
+
+  catering?: OrderCateringInfo;
 
   subtotal: number;
   taxRate: number;
   tax: number;
   total: number;
 
-  orderStatus:
-    | "pending"
-    | "confirmed"
-    | "preparing"
-    | "ready"
-    | "completed"
-    | "cancelled";
-
-  paymentStatus:
-    | "pending"
-    | "paid"
-    | "failed"
-    | "refunded";
+  orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus;
 
   createdAt: string;
 }
@@ -38,7 +47,7 @@ export interface CustomerOrder {
 export interface AdminOrder {
   id: string;
 
-  orderType: "regular" | "catering";
+  orderType: OrderType;
 
   customer?: string;
 
@@ -47,34 +56,20 @@ export interface AdminOrder {
   email: string;
   phone: string;
 
-  items: {
-    menuItem: string;
-    name: string;
-    price: number;
-    quantity: number;
-  }[];
+  items: OrderItem[];
 
-  pickupDate: string;
-  pickupTime: string;
+  pickupDate?: string;
+  pickupTime?: string;
+
+  catering?: OrderCateringInfo;
 
   subtotal: number;
   taxRate: number;
   tax: number;
   total: number;
 
-  orderStatus:
-    | "pending"
-    | "confirmed"
-    | "preparing"
-    | "ready"
-    | "completed"
-    | "cancelled";
-
-  paymentStatus:
-    | "pending"
-    | "paid"
-    | "failed"
-    | "refunded";
+  orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus;
 
   notes?: string;
 

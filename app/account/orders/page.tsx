@@ -69,19 +69,21 @@ export default async function OrdersPage() {
 
               <div className="mt-6 grid gap-4 sm:grid-cols-3">
                 <div>
-                  <p className="text-sm text-foreground/50">
-                    Pickup
-                  </p>
+                  {order.pickupDate ? (
+                    <p className="text-sm text-foreground/60">
+                      Pickup:{" "}
+                      {new Date(
+                        order.pickupDate
+                      ).toLocaleDateString()}
 
-                  <p className="mt-1 font-semibold">
-                    {new Date(
-                      order.pickupDate
-                    ).toLocaleDateString()}
-                  </p>
-
-                  <p className="text-sm text-foreground/60">
-                    {order.pickupTime}
-                  </p>
+                      {order.pickupTime &&
+                        ` at ${order.pickupTime}`}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-foreground/60 capitalize">
+                      {order.orderType} order
+                    </p>
+                  )}
                 </div>
 
                 <div>

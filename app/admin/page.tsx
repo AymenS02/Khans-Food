@@ -3,28 +3,16 @@ import Link from "next/link";
 const page = () => {
   const adminFunctions = [
     {
-      name: "View Menu Settings",
-      path: "menu-settings",
-    },
-    {
-      name: "View Catering Settings",
-      path: "catering-settings",
-    },
-    {
       name: "View Menu Orders",
       path: "orders",
     },
     {
-      name: "View Catering Orders",
-      path: "catering-orders",
+      name: "View Catering Requests",
+      path: "catering",
     },
     {
       name: "View Business Settings",
       path: "settings",
-    },
-    {
-      name: "View Customer Info",
-      path: "customer-info",
     },
   ];
 

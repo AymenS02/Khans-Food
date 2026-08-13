@@ -53,7 +53,36 @@ export default async function SuccessPage({
 
           <p>
             <strong>Pickup Date:</strong>{" "}
-            {new Date(order.pickupDate).toLocaleDateString()}
+            {order.orderType === "regular" &&
+              order.pickupDate &&
+              order.pickupTime ? (
+                <div>
+                  <p className="text-sm text-foreground/50">
+                    Pickup
+                  </p>
+
+                  <p className="mt-1 font-semibold">
+                    {new Date(
+                      order.pickupDate
+                    ).toLocaleDateString()}
+                    {" at "}
+                    {order.pickupTime}
+                  </p>
+                </div>
+              ) : order.orderType === "catering" &&
+                order.catering?.eventDate ? (
+                <div>
+                  <p className="text-sm text-foreground/50">
+                    Event Date
+                  </p>
+
+                  <p className="mt-1 font-semibold">
+                    {new Date(
+                      order.catering.eventDate
+                    ).toLocaleDateString()}
+                  </p>
+                </div>
+              ) : null}
           </p>
 
           <p>

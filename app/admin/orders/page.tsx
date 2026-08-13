@@ -77,15 +77,25 @@ export default async function AdminOrdersPage() {
                     </td>
 
                     <td className="px-5 py-5">
-                      <p className="font-medium">
-                        {new Date(
-                          order.pickupDate
-                        ).toLocaleDateString()}
-                      </p>
+                      {order.pickupDate ? (
+                        <>
+                          <p className="font-medium">
+                            {new Date(
+                              order.pickupDate
+                            ).toLocaleDateString()}
+                          </p>
 
-                      <p className="mt-1 text-sm text-foreground/50">
-                        {order.pickupTime}
-                      </p>
+                          {order.pickupTime && (
+                            <p className="mt-1 text-sm text-foreground/50">
+                              {order.pickupTime}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="font-medium">
+                          Catering Event
+                        </p>
+                      )}
                     </td>
 
                     <td className="px-5 py-5 font-semibold">
