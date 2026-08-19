@@ -5,6 +5,7 @@ import { saveCateringQuote } from "@/actions/catering/saveCateringQuote";
 import { markCateringRequestReviewing } from "@/actions/catering/markCateringRequestReviewing";
 import { approveCateringRequest } from "@/actions/catering/approveCateringRequest";
 import { rejectCateringRequest } from "@/actions/catering/rejectCateringRequest";
+import { createCateringPaymentAccessToken } from "@/lib/orderAccessToken";
 
 import type { AdminCateringRequest } from "@/features/catering/types/adminCatering";
 
@@ -24,6 +25,16 @@ export default async function AdminCateringRequestPage({
 
   const suggestedSubtotal =
     calculateRequestEstimate(request);
+
+  const guestPaymentToken =
+    request.status === "approved" &&
+    request.order &&
+    !request.customer
+      ? createCateringPaymentAccessToken(
+          request.order,
+          request.id
+        )
+      : null;
 
   return (
     <main className="mx-auto max-w-5xl px-5 py-12">
@@ -636,6 +647,27 @@ export default async function AdminCateringRequestPage({
                   >
                     View Order →
                   </Link>
+
+                  {!request.customer &&
+                    request.order &&
+                    guestPaymentToken && (
+                      <div className="mt-5 border-t border-secondary/20 pt-5">
+                        <p className="text-sm font-semibold text-foreground">
+                          Guest Payment Link
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-foreground/60">
+                          This customer checked out as a
+                          guest. Send them this secure link
+                          so they can pay their approved
+                          catering order.
+                        </p>
+
+                        <div className="mt-3 break-all rounded-xl bg-white/70 p-3 font-mono text-xs">
+                          {`/catering/pay/${request.order}?token=${guestPaymentToken}`}
+                        </div>
+                      </div>
+                    )}
                 </>
               ) : (
                 <p className="mt-2 text-sm leading-6 text-accent">
