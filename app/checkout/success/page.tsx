@@ -1,121 +1,254 @@
-import Order from "@/models/Order";
-import { connectToDatabase } from "@/lib/mongodb";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import ClearCart from "@/features/checkout/components/ClearCart";
 
-interface SuccessPageProps {
+import { getCheckoutSuccessOrder } from "@/actions/checkout/getCheckoutSuccessOrder";
+
+import CheckoutSuccessStatus from "@/features/checkout/components/CheckoutSuccessStatus";
+interface CheckoutSuccessPageProps {
   searchParams: Promise<{
     orderId?: string;
+    token?: string;
   }>;
 }
 
-export default async function SuccessPage({
+export default async function CheckoutSuccessPage({
   searchParams,
-}: SuccessPageProps) {
-  const { orderId } = await searchParams;
+}: CheckoutSuccessPageProps) {
+  const {
+    orderId,
+    token,
+  } =
+    await searchParams;
 
-  if (!orderId) {
+  /*
+   * Both are required.
+   *
+   * Order ID by itself is NOT
+   * authorization anymore.
+   */
+  if (
+    !orderId ||
+    !token
+  ) {
     notFound();
   }
 
-  await connectToDatabase();
-
-  const order = await Order.findById(orderId).lean();
-
-  if (!order) {
-    notFound();
-  }
+  const order =
+    await getCheckoutSuccessOrder(
+      orderId,
+      token
+    );
 
   return (
-    <>
-    <ClearCart />
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <div className="rounded-2xl bg-white p-10 shadow">
-        <h1 className="text-4xl font-bold text-green-600">
-          Payment Successful!
-        </h1>
+    <main className="mx-auto max-w-3xl px-5 py-12">
+      {/*
+       * Only clear cart/payment storage
+       * once our DATABASE confirms payment.
+       *
+       * A Stripe browser redirect alone
+       * does not mean we mark it paid.
+       */}
 
-        <p className="mt-4 text-lg">
-          Thank you for your order.
-        </p>
+      <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+        {/* ==========================================
+            HEADER
+        ========================================== */}
 
-        <div className="mt-8 space-y-2">
-          <p>
-            <strong>Order ID:</strong>{" "}
-            {order._id.toString()}
+        <div className="border-b border-black/10 pb-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+            Khans Food
           </p>
 
-          <p>
-            <strong>Name:</strong>{" "}
-            {order.firstName} {order.lastName}
-          </p>
-
-          <p>
-            <strong>Pickup Date:</strong>{" "}
-            {order.orderType === "regular" &&
-              order.pickupDate &&
-              order.pickupTime ? (
-                <div>
-                  <p className="text-sm text-foreground/50">
-                    Pickup
-                  </p>
-
-                  <p className="mt-1 font-semibold">
-                    {new Date(
-                      order.pickupDate
-                    ).toLocaleDateString()}
-                    {" at "}
-                    {order.pickupTime}
-                  </p>
-                </div>
-              ) : order.orderType === "catering" &&
-                order.catering?.eventDate ? (
-                <div>
-                  <p className="text-sm text-foreground/50">
-                    Event Date
-                  </p>
-
-                  <p className="mt-1 font-semibold">
-                    {new Date(
-                      order.catering.eventDate
-                    ).toLocaleDateString()}
-                  </p>
-                </div>
-              ) : null}
-          </p>
-
-          <p>
-            <strong>Pickup Time:</strong>{" "}
-            {order.pickupTime}
-          </p>
-
-          <p>
-            <strong>Total:</strong> $
-            {order.total.toFixed(2)}
-          </p>
-
-          <p>
-            <strong>Payment Status:</strong>{" "}
-            {order.paymentStatus}
-          </p>
-
-          <p>
-            <strong>Order Status:</strong>{" "}
-            {order.orderStatus}
-          </p>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">
+            Your Order
+          </h1>
         </div>
         
-        {order.paymentStatus === "paid" && <ClearCart />}
+        <section className="border-b border-black/10 py-6">
+          <CheckoutSuccessStatus
+            orderId={
+              order.id
+            }
+            accessToken={
+              token
+            }
+            firstName={
+              order.firstName
+            }
+            initialPaymentStatus={
+              order.paymentStatus
+            }
+            initialOrderStatus={
+              order.orderStatus
+            }
+          />
+        </section>
 
-        <Link
-          href="/"
-          className="mt-10 inline-block rounded-xl bg-primary px-6 py-3 font-semibold text-white"
-        >
-          Back to Home
-        </Link>
+        {/* ==========================================
+            ORDER INFO
+        ========================================== */}
+
+        <section className="grid gap-5 border-b border-black/10 py-6 sm:grid-cols-3">
+          <div>
+            <p className="text-sm text-foreground/50">
+              Order
+            </p>
+
+            <p className="mt-1 break-all font-mono text-sm font-semibold">
+              {order.id}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-foreground/50">
+              Pickup
+            </p>
+
+            <p className="mt-1 font-semibold">
+              {formatDateOnly(
+                order.pickupDate
+              )}
+            </p>
+
+            <p className="mt-1 text-sm text-foreground/60">
+              {order.pickupTime}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-foreground/50">
+              Total
+            </p>
+
+            <p className="mt-1 text-xl font-bold text-primary">
+              $
+              {order.total.toFixed(
+                2
+              )}
+            </p>
+          </div>
+        </section>
+
+        {/* ==========================================
+            ITEMS
+        ========================================== */}
+
+        <section className="border-b border-black/10 py-6">
+          <h2 className="text-xl font-bold text-foreground">
+            Items
+          </h2>
+
+          <div className="mt-5 divide-y divide-black/10">
+            {order.items.map(
+              (item, index) => (
+                <div
+                  key={
+                    item.menuItem ??
+                    `${item.name}-${index}`
+                  }
+                  className="flex items-start justify-between gap-6 py-4 first:pt-0"
+                >
+                  <div>
+                    <p className="font-semibold">
+                      {item.name}
+                    </p>
+
+                    <p className="mt-1 text-sm text-foreground/60">
+                      $
+                      {item.price.toFixed(
+                        2
+                      )}
+                      {" × "}
+                      {
+                        item.quantity
+                      }
+                    </p>
+                  </div>
+
+                  <p className="font-semibold">
+                    $
+                    {(
+                      item.price *
+                      item.quantity
+                    ).toFixed(2)}
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+        </section>
+
+        {/* ==========================================
+            TOTALS
+        ========================================== */}
+
+        <section className="pt-6">
+          <div className="ml-auto max-w-sm space-y-3">
+            <div className="flex justify-between gap-6">
+              <span className="text-foreground/60">
+                Subtotal
+              </span>
+
+              <span>
+                $
+                {order.subtotal.toFixed(
+                  2
+                )}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-6">
+              <span className="text-foreground/60">
+                Tax (
+                {(
+                  order.taxRate *
+                  100
+                ).toFixed(0)}
+                %)
+              </span>
+
+              <span>
+                $
+                {order.tax.toFixed(
+                  2
+                )}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-6 border-t border-black/10 pt-3 text-lg font-bold">
+              <span>
+                Total
+              </span>
+
+              <span>
+                $
+                {order.total.toFixed(
+                  2
+                )}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* ==========================================
+            ACTIONS
+        ========================================== */}
       </div>
     </main>
-    </>
+  );
+}
+
+function formatDateOnly(
+  date: string
+) {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "UTC",
+    }
+  ).format(
+    new Date(date)
   );
 }
