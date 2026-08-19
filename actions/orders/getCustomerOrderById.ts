@@ -45,6 +45,23 @@ export async function getCustomerOrderById(
       quantity: item.quantity,
     })),
 
+    catering:
+      order.catering?.eventDate
+        ? {
+            requestId:
+              order.catering.requestId?.toString(),
+
+            eventDate:
+              order.catering.eventDate.toISOString(),
+
+            guestCount:
+              order.catering.guestCount,
+
+            notes:
+              order.catering.notes,
+          }
+        : undefined,
+        
     pickupDate: order.pickupDate?.toISOString(),
     pickupTime: order.pickupTime,
 

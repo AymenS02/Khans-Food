@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getCustomerOrderById } from "@/actions/orders/getCustomerOrderById";
+import { prepareCateringPayment } from "@/actions/catering/prepareCateringPayment";
 
 interface OrderDetailsPageProps {
   params: Promise<{
@@ -53,30 +54,41 @@ export default async function OrderDetailsPage({
         </div>
 
         <section className="py-6">
-          {order.pickupDate && order.pickupTime ? (
+          {order.orderType === "regular" &&
+          order.pickupDate &&
+          order.pickupTime ? (
             <div>
               <p className="text-sm text-foreground/50">
                 Pickup
               </p>
 
               <p className="mt-1 font-semibold">
-                {new Date(
-                  order.pickupDate
-                ).toLocaleDateString()}
+                {formatDateOnly(order.pickupDate)}
                 {" at "}
                 {order.pickupTime}
               </p>
             </div>
-          ) : (
+          ) : order.orderType === "catering" &&
+            order.catering ? (
             <div>
               <p className="text-sm text-foreground/50">
-                Order Type
+                Catering Event
               </p>
 
-              <p className="mt-1 font-semibold capitalize">
-                {order.orderType}
+              <p className="mt-1 font-semibold">
+                {formatDateOnly(
+                  order.catering.eventDate
+                )}
+              </p>
+
+              <p className="mt-1 text-sm text-foreground/60">
+                {order.catering.guestCount} guests
               </p>
             </div>
+          ) : (
+            <p className="text-sm text-accent">
+              Fulfillment information unavailable.
+            </p>
           )}
         </section>
 
@@ -88,7 +100,10 @@ export default async function OrderDetailsPage({
           <div className="mt-5 divide-y divide-black/10">
             {order.items.map((item) => (
               <div
-                key={item.menuItem}
+                key={
+                  item.menuItem ??
+                  `${item.name}-${item.quantity}`
+                }
                 className="flex items-start justify-between gap-6 py-4 first:pt-0"
               >
                 <div>
@@ -144,7 +159,82 @@ export default async function OrderDetailsPage({
             </div>
           </div>
         </section>
+
+        {order.orderType === "catering" &&
+          order.paymentStatus !== "paid" &&
+          order.orderStatus !== "cancelled" && (
+            <section className="mt-6 border-t border-black/10 pt-6">
+              <div className="rounded-2xl bg-background p-5">
+                <h2 className="text-lg font-bold text-foreground">
+                  Payment Required
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-foreground/60">
+                  Your catering request has been
+                  approved. Complete payment to
+                  confirm your catering order.
+                </p>
+
+                <p className="mt-4 text-sm text-foreground/50">
+                  Amount Due
+                </p>
+
+                <p className="mt-1 text-2xl font-bold text-primary">
+                  ${order.total.toFixed(2)}
+                </p>
+
+                <form
+                  action={
+                    prepareCateringPayment
+                  }
+                  className="mt-5"
+                >
+                  <input
+                    type="hidden"
+                    name="orderId"
+                    value={order.id}
+                  />
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:opacity-90"
+                  >
+                    Pay Catering Order
+                  </button>
+                </form>
+              </div>
+            </section>
+          )}
+
+          {order.orderType === "catering" &&
+            order.paymentStatus === "paid" && (
+              <section className="mt-6 border-t border-black/10 pt-6">
+                <div className="rounded-2xl bg-secondary/10 p-5">
+                  <p className="font-semibold text-foreground">
+                    Catering order paid
+                  </p>
+
+                  <p className="mt-2 text-sm text-foreground/60">
+                    No payment is currently due.
+                  </p>
+                </div>
+              </section>
+            )}
       </div>
     </main>
   );
+}
+
+function formatDateOnly(
+  date: string
+) {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }
+  ).format(new Date(date));
 }

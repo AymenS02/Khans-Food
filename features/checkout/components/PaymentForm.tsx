@@ -9,10 +9,13 @@ import {
 
 interface PaymentFormProps {
   orderId: string;
+
+  returnUrl: string;
 }
 
 export default function PaymentForm({
   orderId,
+  returnUrl,
 }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -41,7 +44,7 @@ export default function PaymentForm({
         elements,
 
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success?orderId=${orderId}`,
+          return_url: returnUrl,
         },
       });
 

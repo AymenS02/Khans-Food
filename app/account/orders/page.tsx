@@ -69,19 +69,42 @@ export default async function OrdersPage() {
 
               <div className="mt-6 grid gap-4 sm:grid-cols-3">
                 <div>
-                  {order.pickupDate ? (
-                    <p className="text-sm text-foreground/60">
-                      Pickup:{" "}
-                      {new Date(
-                        order.pickupDate
-                      ).toLocaleDateString()}
+                  <p className="text-sm text-foreground/50">
+                    {order.orderType === "regular"
+                      ? "Pickup"
+                      : "Catering Event"}
+                  </p>
 
-                      {order.pickupTime &&
-                        ` at ${order.pickupTime}`}
-                    </p>
+                  {order.orderType === "regular" &&
+                  order.pickupDate &&
+                  order.pickupTime ? (
+                    <>
+                      <p className="mt-1 font-semibold">
+                        {formatDateOnly(
+                          order.pickupDate
+                        )}
+                      </p>
+
+                      <p className="mt-1 text-sm text-foreground/60">
+                        {order.pickupTime}
+                      </p>
+                    </>
+                  ) : order.orderType === "catering" &&
+                    order.catering ? (
+                    <>
+                      <p className="mt-1 font-semibold">
+                        {formatDateOnly(
+                          order.catering.eventDate
+                        )}
+                      </p>
+
+                      <p className="mt-1 text-sm text-foreground/60">
+                        {order.catering.guestCount} guests
+                      </p>
+                    </>
                   ) : (
-                    <p className="text-sm text-foreground/60 capitalize">
-                      {order.orderType} order
+                    <p className="mt-1 text-sm text-foreground/50">
+                      Information unavailable
                     </p>
                   )}
                 </div>
@@ -125,4 +148,18 @@ export default async function OrdersPage() {
       )}
     </main>
   );
+}
+
+function formatDateOnly(
+  date: string
+) {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }
+  ).format(new Date(date));
 }

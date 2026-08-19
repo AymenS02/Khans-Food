@@ -1,40 +1,64 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import StripeProvider from "@/features/checkout/components/StripeProvider";
 import PaymentForm from "@/features/checkout/components/PaymentForm";
 
 interface PaymentData {
   orderId: string;
   clientSecret: string;
+  successAccessToken: string;
 }
 
 export default function PaymentPage() {
-  const [paymentData, setPaymentData] =
-    useState<PaymentData | null>(null);
+  const [
+    paymentData,
+    setPaymentData,
+  ] =
+    useState<PaymentData | null>(
+      null
+    );
 
   useEffect(() => {
     const stored =
-      sessionStorage.getItem("checkoutPayment");
+      sessionStorage.getItem(
+        "checkoutPayment"
+      );
 
     if (!stored) {
       return;
     }
 
     try {
-      const parsed = JSON.parse(stored);
+      const parsed =
+        JSON.parse(stored);
 
       if (
-        typeof parsed.orderId !== "string" ||
-        typeof parsed.clientSecret !== "string"
+        typeof parsed.orderId !==
+          "string" ||
+        typeof parsed.clientSecret !==
+          "string" ||
+        typeof parsed.successAccessToken !==
+          "string"
       ) {
         sessionStorage.removeItem(
           "checkoutPayment"
         );
+
         return;
       }
 
-      setPaymentData(parsed);
+      setPaymentData({
+        orderId:
+          parsed.orderId,
+
+        clientSecret:
+          parsed.clientSecret,
+
+        successAccessToken:
+          parsed.successAccessToken,
+      });
     } catch {
       sessionStorage.removeItem(
         "checkoutPayment"
@@ -56,6 +80,15 @@ export default function PaymentPage() {
     );
   }
 
+  const returnUrl =
+    `${window.location.origin}/checkout/success` +
+    `?orderId=${encodeURIComponent(
+      paymentData.orderId
+    )}` +
+    `&token=${encodeURIComponent(
+      paymentData.successAccessToken
+    )}`;
+    
   return (
     <main className="mx-auto max-w-2xl px-5 py-10">
       <h1 className="text-4xl font-bold text-foreground">
@@ -63,7 +96,8 @@ export default function PaymentPage() {
       </h1>
 
       <p className="mt-2 text-foreground/70">
-        Complete your payment to confirm your order.
+        Complete your payment to
+        confirm your order.
       </p>
 
       <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
@@ -73,7 +107,12 @@ export default function PaymentPage() {
           }
         >
           <PaymentForm
-            orderId={paymentData.orderId}
+            orderId={
+              paymentData.orderId
+            }
+            returnUrl={
+              returnUrl
+            }
           />
         </StripeProvider>
       </div>

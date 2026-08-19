@@ -42,7 +42,7 @@ export default async function AdminOrdersPage() {
                   </th>
 
                   <th className="px-5 py-4 text-sm font-semibold">
-                    Pickup
+                    Fulfillment
                   </th>
 
                   <th className="px-5 py-4 text-sm font-semibold">
@@ -77,23 +77,37 @@ export default async function AdminOrdersPage() {
                     </td>
 
                     <td className="px-5 py-5">
-                      {order.pickupDate ? (
+                      {order.orderType === "regular" &&
+                      order.pickupDate &&
+                      order.pickupTime ? (
                         <>
                           <p className="font-medium">
-                            {new Date(
+                            {formatDateOnly(
                               order.pickupDate
-                            ).toLocaleDateString()}
+                            )}
                           </p>
 
-                          {order.pickupTime && (
-                            <p className="mt-1 text-sm text-foreground/50">
-                              {order.pickupTime}
-                            </p>
-                          )}
+                          <p className="mt-1 text-sm text-foreground/50">
+                            Pickup • {order.pickupTime}
+                          </p>
+                        </>
+                      ) : order.orderType === "catering" &&
+                        order.catering ? (
+                        <>
+                          <p className="font-medium">
+                            {formatDateOnly(
+                              order.catering.eventDate
+                            )}
+                          </p>
+
+                          <p className="mt-1 text-sm text-foreground/50">
+                            Catering •{" "}
+                            {order.catering.guestCount} guests
+                          </p>
                         </>
                       ) : (
-                        <p className="font-medium">
-                          Catering Event
+                        <p className="text-sm text-foreground/50">
+                          —
                         </p>
                       )}
                     </td>
@@ -131,4 +145,18 @@ export default async function AdminOrdersPage() {
       )}
     </main>
   );
+}
+
+function formatDateOnly(
+  date: string
+) {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }
+  ).format(new Date(date));
 }

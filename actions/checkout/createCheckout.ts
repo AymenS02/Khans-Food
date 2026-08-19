@@ -5,6 +5,8 @@ import { stripe } from "@/lib/stripe";
 
 import Order from "@/models/Order";
 
+import { createOrderAccessToken } from "@/lib/orderAccessToken";
+
 import { validateOrderItems } from "@/features/checkout/services/validateOrderItems";
 import { validatePickup } from "@/features/checkout/services/validatePickup";
 import { getBusinessHoursForDate } from "@/features/checkout/services/getBusinessHoursForDate";
@@ -317,6 +319,12 @@ export async function createCheckout(
       );
     }
 
+    const successAccessToken =
+      createOrderAccessToken(
+        order._id.toString(),
+        checkoutAttemptId
+      );
+
     /*
      * Because of the check immediately
      * above, TypeScript now knows that:
@@ -335,6 +343,8 @@ export async function createCheckout(
       clientSecret:
         paymentIntent.client_secret,
 
+      successAccessToken,
+      
       items:
         order.items,
 

@@ -181,113 +181,139 @@ export default function CheckoutForm() {
   const onSubmit = async (
     data: CheckoutFormData
   ) => {
-
     clearErrors("root");
 
-    const cartItems = items.map((item) => ({
-      menuItemId: item.id,
-      quantity: item.quantity,
-    }));
+    /*
+    * Convert Zustand cart items into the
+    * structure expected by our checkout API.
+    */
+    const cartItems =
+      items.map((item) => ({
+        menuItemId: item.id,
+        quantity: item.quantity,
+      }));
 
     if (cartItems.length === 0) {
       setError("root", {
         type: "server",
-        message: "Your cart is empty.",
+        message:
+          "Your cart is empty.",
       });
 
       return;
     }
 
     /*
-     * Represents the exact checkout the
-     * customer is currently trying to make.
-     */
+    * Represents the exact checkout the
+    * customer is currently trying to make.
+    */
     const checkoutPayload = {
       ...data,
       items: cartItems,
     };
 
     /*
-     * We use this to determine whether
-     * the checkout changed since the
-     * previous submission.
-     */
+    * Used to detect whether the checkout
+    * contents changed since the last submit.
+    */
     const checkoutSignature =
-      JSON.stringify(checkoutPayload);
+      JSON.stringify(
+        checkoutPayload
+      );
 
     /*
-     * Try to reuse an existing checkout
-     * attempt if this exact checkout has
-     * already been submitted.
-     */
+    * Look for a previous checkout attempt.
+    */
     const storedAttempt =
       sessionStorage.getItem(
         "checkoutAttempt"
       );
 
-    let checkoutAttemptId: string;
+    let checkoutAttemptId:
+      string;
 
     if (storedAttempt) {
       try {
-        const parsed = JSON.parse(
-          storedAttempt
-        );
+        const parsed =
+          JSON.parse(
+            storedAttempt
+          );
 
         if (
           parsed.signature ===
             checkoutSignature &&
-          typeof parsed.id === "string"
+          typeof parsed.id ===
+            "string"
         ) {
-          // Same checkout attempt.
-          checkoutAttemptId = parsed.id;
+          /*
+          * Exact same checkout:
+          * reuse the attempt ID.
+          */
+          checkoutAttemptId =
+            parsed.id;
         } else {
-          // Checkout changed.
+          /*
+          * Checkout changed:
+          * create a new attempt.
+          */
           checkoutAttemptId =
             crypto.randomUUID();
         }
       } catch {
-        // Stored data was invalid.
+        /*
+        * Invalid stored data:
+        * start a new attempt.
+        */
         checkoutAttemptId =
           crypto.randomUUID();
       }
     } else {
-      // First checkout attempt.
+      /*
+      * First checkout attempt.
+      */
       checkoutAttemptId =
         crypto.randomUUID();
     }
 
     /*
-     * Save the attempt BEFORE sending
-     * the request.
-     *
-     * If the request fails and gets
-     * retried, we reuse this same ID.
-     */
+    * IMPORTANT:
+    *
+    * Save the checkout ATTEMPT here.
+    *
+    * Your previous code accidentally saved
+    * "checkoutPayment" here and referenced
+    * result before the API request existed.
+    */
     sessionStorage.setItem(
       "checkoutAttempt",
       JSON.stringify({
-        id: checkoutAttemptId,
-        signature: checkoutSignature,
+        id:
+          checkoutAttemptId,
+
+        signature:
+          checkoutSignature,
       })
     );
 
     try {
-      const response = await fetch(
-        "/api/checkout",
-        {
-          method: "POST",
+      const response =
+        await fetch(
+          "/api/checkout",
+          {
+            method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-          body: JSON.stringify({
-            ...checkoutPayload,
-            checkoutAttemptId,
-          }),
-        }
-      );
+            body:
+              JSON.stringify({
+                ...checkoutPayload,
+                checkoutAttemptId,
+              }),
+          }
+        );
 
       const result =
         await response.json();
@@ -298,6 +324,7 @@ export default function CheckoutForm() {
       ) {
         setError("root", {
           type: "server",
+
           message:
             result.error ??
             "Unable to create checkout.",
@@ -305,16 +332,44 @@ export default function CheckoutForm() {
 
         return;
       }
+
       /*
-       * Save what the payment page
-       * needs to initialize Stripe.
-       */
+      * Validate the values required by the
+      * Stripe payment page and secure
+      * success page.
+      */
+      if (
+        typeof result.orderId !==
+          "string" ||
+        typeof result.clientSecret !==
+          "string" ||
+        typeof result.successAccessToken !==
+          "string"
+      ) {
+        setError("root", {
+          type: "server",
+          message:
+            "Invalid checkout response.",
+        });
+
+        return;
+      }
+
+      /*
+      * Only AFTER a successful server
+      * response do we save payment data.
+      */
       sessionStorage.setItem(
         "checkoutPayment",
         JSON.stringify({
-          orderId: result.orderId,
+          orderId:
+            result.orderId,
+
           clientSecret:
             result.clientSecret,
+
+          successAccessToken:
+            result.successAccessToken,
         })
       );
 
@@ -328,6 +383,7 @@ export default function CheckoutForm() {
 
       setError("root", {
         type: "server",
+
         message:
           "Something went wrong. Please try again.",
       });
@@ -523,21 +579,6 @@ export default function CheckoutForm() {
             {errors.pickupTime && (
               <p className="mt-2 text-sm text-accent">
                 {errors.pickupTime.message}
-              </p>
-            )}
-
-            {pickupTimesError && (
-              <p className="mt-2 text-sm text-accent">
-                {pickupTimesError}
-              </p>
-            )}
-
-            {errors.pickupTime && (
-              <p className="mt-2 text-sm text-accent">
-                {
-                  errors.pickupTime
-                    .message
-                }
               </p>
             )}
 
