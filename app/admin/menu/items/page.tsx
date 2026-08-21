@@ -4,6 +4,7 @@ import MenuItemCreateForm from "@/features/menu/components/admin/MenuItemCreateF
 
 import { getAdminCategories } from "@/actions/menu/getAdminCategories";
 import { getAdminMenuItems } from "@/actions/menu/getAdminMenuItems";
+import MenuItemRowActions from "@/features/menu/components/admin/MenuItemRowActions";
 
 export default async function AdminMenuItemsPage() {
   const [
@@ -76,35 +77,37 @@ export default async function AdminMenuItemsPage() {
           <div className="mt-6 overflow-hidden rounded-xl border border-black/10">
             {/* Desktop header */}
 
-            <div className="hidden grid-cols-[2fr_1fr_1fr_.7fr_.7fr] gap-4 bg-background px-4 py-3 text-sm font-semibold text-foreground/60 md:grid">
-              <span>
-                Item
-              </span>
+          <div className="hidden grid-cols-[1.8fr_1fr_.8fr_.5fr_.7fr_1.5fr] gap-4 bg-background px-4 py-3 text-sm font-semibold text-foreground/60 md:grid">
+            <span>
+              Item
+            </span>
 
-              <span>
-                Category
-              </span>
+            <span>
+              Category
+            </span>
 
-              <span>
-                Price
-              </span>
+            <span>
+              Price
+            </span>
 
-              <span>
-                Order
-              </span>
+            <span>
+              Order
+            </span>
 
-              <span>
-                Status
-              </span>
-            </div>
+            <span>
+              Status
+            </span>
+
+            <span>
+              Actions
+            </span>
+          </div>
 
             {items.map(
               (item) => (
                 <div
-                  key={
-                    item.id
-                  }
-                  className="grid gap-4 border-t border-black/10 px-4 py-5 first:border-t-0 md:grid-cols-[2fr_1fr_1fr_.7fr_.7fr] md:items-center"
+                  key={item.id}
+                  className="grid gap-4 border-t border-black/10 px-4 py-5 first:border-t-0 md:grid-cols-[1.8fr_1fr_.8fr_.5fr_.7fr_1.5fr] md:items-start"
                 >
                   {/* Item */}
 
@@ -194,6 +197,23 @@ export default async function AdminMenuItemsPage() {
                         : "Hidden"}
                     </span>
                   </div>
+
+                  {/* Actions */}
+
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase text-foreground/40 md:hidden">
+                      Actions
+                    </p>
+
+                    <MenuItemRowActions
+                      item={item}
+                      categories={
+                        categories
+                      }
+                    />
+                  </div>
+
+
                 </div>
               )
             )}
