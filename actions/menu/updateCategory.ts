@@ -1,8 +1,7 @@
 "use server";
 
-import {
-  revalidatePath,
-} from "next/cache";
+import { revalidatePath } from "next/cache";
+import { Types } from "mongoose";
 
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
@@ -10,12 +9,10 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Category from "@/models/Category";
 
 import { categorySchema } from "@/features/menu/validators/categorySchema";
-
 import { createSlug } from "@/features/menu/utils/createSlug";
 
-export interface CategoryActionState {
+export interface UpdateCategoryActionState {
   success: boolean;
-
   message: string;
 
   fieldErrors?: {
@@ -23,21 +20,16 @@ export interface CategoryActionState {
   };
 }
 
-export async function createCategory(
+export async function updateCategory(
   _previousState:
-    CategoryActionState,
+    UpdateCategoryActionState,
 
   formData: FormData
-): Promise<CategoryActionState> {
+): Promise<UpdateCategoryActionState> {
   /*
    * ==========================================
-   * 1. SECURITY
+   * 1. AUTHORIZATION
    * ==========================================
-   *
-   * The admin layout protecting the PAGE
-   * is not enough.
-   *
-   * Server Actions must protect themselves.
    */
 
   const session =
@@ -51,13 +43,38 @@ export async function createCategory(
     return {
       success: false,
       message:
-        "You are not authorized to create categories.",
+        "You are not authorized to update categories.",
     };
   }
 
   /*
    * ==========================================
-   * 2. VALIDATE INPUT
+   * 2. CATEGORY ID
+   * ==========================================
+   */
+
+  const categoryId =
+    formData.get(
+      "categoryId"
+    );
+
+  if (
+    typeof categoryId !==
+      "string" ||
+    !Types.ObjectId.isValid(
+      categoryId
+    )
+  ) {
+    return {
+      success: false,
+      message:
+        "Invalid category.",
+    };
+  }
+
+  /*
+   * ==========================================
+   * 3. VALIDATE NEW NAME
    * ==========================================
    */
 
@@ -85,12 +102,6 @@ export async function createCategory(
   const name =
     parsed.data.name;
 
-  /*
-   * ==========================================
-   * 3. CREATE SLUG
-   * ==========================================
-   */
-
   const slug =
     createSlug(name);
 
@@ -106,48 +117,84 @@ export async function createCategory(
 
   /*
    * ==========================================
-   * 4. PREVENT DUPLICATES
+   * 4. CATEGORY MUST EXIST
    * ==========================================
    */
 
-  const existingCategory =
-    await Category.findOne({
-      slug,
-    })
-      .select("_id")
-      .lean();
+  const category =
+    await Category.findById(
+      categoryId
+    );
 
-  if (existingCategory) {
+  if (!category) {
     return {
       success: false,
-
       message:
-        "A category with this name already exists.",
+        "Category not found.",
     };
   }
 
   /*
    * ==========================================
-   * 5. CREATE CATEGORY
+   * 5. NO-OP UPDATE
    * ==========================================
    */
 
-  try {
-    await Category.create({
-      name,
-      slug,
-    });
-  } catch (error) {
-    /*
-     * Still handle duplicate-key errors.
-     *
-     * Why?
-     *
-     * Two requests could theoretically
-     * pass findOne() at nearly the same
-     * time.
-     */
+  if (
+    category.name === name &&
+    category.slug === slug
+  ) {
+    return {
+      success: true,
+      message:
+        "No changes were needed.",
+    };
+  }
 
+  /*
+   * ==========================================
+   * 6. CHECK FOR SLUG COLLISION
+   * ==========================================
+   *
+   * Ignore the category we're currently
+   * editing.
+   */
+
+  const duplicateCategory =
+    await Category.findOne({
+      slug,
+
+      _id: {
+        $ne: category._id,
+      },
+    })
+      .select("_id")
+      .lean();
+
+  if (duplicateCategory) {
+    return {
+      success: false,
+
+      message:
+        "Another category with this name already exists.",
+    };
+  }
+
+  /*
+   * ==========================================
+   * 7. UPDATE
+   * ==========================================
+   */
+
+  category.name =
+    name;
+
+  category.slug =
+    slug;
+
+  try {
+    await category.save();
+  } catch (error) {
     if (
       isDuplicateKeyError(
         error
@@ -157,26 +204,25 @@ export async function createCategory(
         success: false,
 
         message:
-          "A category with this name already exists.",
+          "Another category with this name already exists.",
       };
     }
 
     console.error(
-      "Unable to create category:",
+      "Unable to update category:",
       error
     );
 
     return {
       success: false,
-
       message:
-        "Unable to create category.",
+        "Unable to update category.",
     };
   }
 
   /*
    * ==========================================
-   * 6. REFRESH RELEVANT PAGES
+   * 8. REVALIDATE
    * ==========================================
    */
 
@@ -192,16 +238,9 @@ export async function createCategory(
     success: true,
 
     message:
-      `${name} was created successfully.`,
+      `${name} was updated successfully.`,
   };
 }
-
-/*
- * ==========================================
- * HELPERS
- * ==========================================
- */
-
 
 function isDuplicateKeyError(
   error: unknown

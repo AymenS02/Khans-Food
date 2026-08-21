@@ -2,6 +2,8 @@ import CategoryCreateForm from "@/features/menu/components/admin/CategoryCreateF
 
 import { getAdminCategories } from "@/actions/menu/getAdminCategories";
 
+import CategoryRowActions from "@/features/menu/components/admin/CategoryRowActions";
+
 export default async function AdminCategoriesPage() {
   const categories =
     await getAdminCategories();
@@ -56,13 +58,19 @@ export default async function AdminCategoriesPage() {
           </div>
         ) : (
           <div className="mt-6 overflow-hidden rounded-xl border border-black/10">
-            <div className="grid grid-cols-2 bg-background px-4 py-3 text-sm font-semibold text-foreground/60">
+            {/* Desktop headings */}
+
+            <div className="hidden grid-cols-[1fr_1fr_2fr] gap-5 bg-background px-4 py-3 text-sm font-semibold text-foreground/60 md:grid">
               <span>
                 Name
               </span>
 
               <span>
                 Slug
+              </span>
+
+              <span>
+                Actions
               </span>
             </div>
 
@@ -72,19 +80,52 @@ export default async function AdminCategoriesPage() {
                   key={
                     category.id
                   }
-                  className="grid grid-cols-2 border-t border-black/10 px-4 py-4"
+                  className="grid gap-4 border-t border-black/10 px-4 py-5 first:border-t-0 md:grid-cols-[1fr_1fr_2fr] md:items-start"
                 >
-                  <span className="font-semibold">
-                    {
-                      category.name
-                    }
-                  </span>
+                  {/* Name */}
 
-                  <span className="font-mono text-sm text-foreground/60">
-                    {
-                      category.slug
-                    }
-                  </span>
+                  <div>
+                    <p className="text-xs font-semibold uppercase text-foreground/40 md:hidden">
+                      Name
+                    </p>
+
+                    <p className="mt-1 font-semibold md:mt-0">
+                      {
+                        category.name
+                      }
+                    </p>
+                  </div>
+
+                  {/* Slug */}
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase text-foreground/40 md:hidden">
+                      Slug
+                    </p>
+
+                    <p className="mt-1 break-all font-mono text-sm text-foreground/60 md:mt-0">
+                      {
+                        category.slug
+                      }
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase text-foreground/40 md:hidden">
+                      Actions
+                    </p>
+
+                    <CategoryRowActions
+                      id={
+                        category.id
+                      }
+                      name={
+                        category.name
+                      }
+                    />
+                  </div>
                 </div>
               )
             )}
