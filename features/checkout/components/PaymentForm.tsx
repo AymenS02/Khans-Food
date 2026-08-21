@@ -7,6 +7,8 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 
+import { useReloadOnPaymentPageRestore } from "@/features/checkout/hooks/useReloadOnPaymentPageRestore";
+
 interface PaymentFormProps {
   orderId: string;
 
@@ -17,6 +19,9 @@ export default function PaymentForm({
   orderId,
   returnUrl,
 }: PaymentFormProps) {
+
+  useReloadOnPaymentPageRestore();
+
   const stripe = useStripe();
   const elements = useElements();
 
