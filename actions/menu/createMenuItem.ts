@@ -12,6 +12,13 @@ import Category from "@/models/Category";
 import { menuItemSchema } from "@/features/menu/validators/menuItemSchema";
 import { createSlug } from "@/features/menu/utils/createSlug";
 
+import {
+  MenuImageUploadError,
+  uploadMenuItemImage,
+} from "@/features/menu/services/uploadMenuItemImage";
+
+import { deleteMenuItemImage } from "@/features/menu/services/deleteMenuItemImage";
+
 export interface CreateMenuItemActionState {
   success: boolean;
 
@@ -23,6 +30,7 @@ export interface CreateMenuItemActionState {
     price?: string[];
     categoryId?: string[];
     displayOrder?: string[];
+    image?: string[];
   };
 }
 
@@ -198,11 +206,67 @@ export async function createMenuItem(
       "available"
     ) === "on";
 
+  const imageValue =
+    formData.get("image");
+
+  const image =
+    imageValue instanceof File &&
+    imageValue.size > 0
+      ? imageValue
+      : null;
+
   /*
    * ==========================================
    * 7. CREATE
    * ==========================================
    */
+  
+
+  let uploadedImage:
+    {
+      url: string;
+      publicId: string;
+    }
+    | undefined;
+
+  if (image) {
+    try {
+      uploadedImage =
+        await uploadMenuItemImage(
+          image
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        MenuImageUploadError
+      ) {
+        return {
+          success: false,
+
+          message:
+            "Please fix the menu item image.",
+
+          fieldErrors: {
+            image: [
+              error.message,
+            ],
+          },
+        };
+      }
+
+      console.error(
+        "Unable to upload menu image:",
+        error
+      );
+
+      return {
+        success: false,
+
+        message:
+          "Unable to upload the image.",
+      };
+    }
+  }
 
   try {
     await MenuItem.create({
@@ -210,9 +274,17 @@ export async function createMenuItem(
       slug,
 
       description:
-        description || undefined,
+        description ||
+        undefined,
 
       price,
+
+      image:
+        uploadedImage?.url,
+
+      imagePublicId:
+        uploadedImage
+          ?.publicId,
 
       categoryId:
         category._id,
@@ -222,6 +294,80 @@ export async function createMenuItem(
       displayOrder,
     });
   } catch (error) {
+
+    try {
+  await MenuItem.create({
+    name,
+    slug,
+
+    description:
+      description ||
+      undefined,
+
+    price,
+
+    image:
+      uploadedImage?.url,
+
+    imagePublicId:
+      uploadedImage
+        ?.publicId,
+
+    categoryId:
+      category._id,
+
+    available,
+
+    displayOrder,
+  });
+} catch (error) {
+    /*
+    * Cloudinary succeeded but MongoDB failed.
+    * Remove the orphaned asset.
+    */
+    if (
+      uploadedImage
+        ?.publicId
+    ) {
+      try {
+        await deleteMenuItemImage(
+          uploadedImage.publicId
+        );
+      } catch (
+        cleanupError
+      ) {
+        console.error(
+          "Unable to clean up uploaded image:",
+          cleanupError
+        );
+      }
+    }
+
+    if (
+      isDuplicateKeyError(
+        error
+      )
+    ) {
+      return {
+        success: false,
+
+        message:
+          "A menu item with this name already exists.",
+      };
+    }
+
+    console.error(
+      "Unable to create menu item:",
+      error
+    );
+
+    return {
+      success: false,
+
+      message:
+        "Unable to create menu item.",
+    };
+  }
     if (
       isDuplicateKeyError(
         error

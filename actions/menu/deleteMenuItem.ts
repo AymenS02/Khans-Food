@@ -9,6 +9,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import MenuItem from "@/models/MenuItem";
 import Order from "@/models/Order";
 
+import { deleteMenuItemImage } from "@/features/menu/services/deleteMenuItemImage";
+
 export interface DeleteMenuItemActionState {
   success: boolean;
   message: string;
@@ -121,8 +123,36 @@ export async function deleteMenuItem(
    * ==========================================
    */
 
+  /*
+  * Remember the Cloudinary ID before
+  * deleting the MongoDB document.
+  */
+
+  const imagePublicId =
+    menuItem.imagePublicId;
+
+  /*
+  * Delete MongoDB first.
+  */
+
   await menuItem.deleteOne();
 
+  /*
+  * Then clean up Cloudinary.
+  */
+
+  if (imagePublicId) {
+    try {
+      await deleteMenuItemImage(
+        imagePublicId
+      );
+    } catch (error) {
+      console.error(
+        "Unable to delete menu item image:",
+        error
+      );
+    }
+  }
   revalidatePath(
     "/admin/menu/items"
   );

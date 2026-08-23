@@ -8,6 +8,7 @@ export interface IMenuItem extends Document {
   price: number;
 
   image?: string;
+  imagePublicId?: string;
   categoryId: mongoose.Types.ObjectId;
 
   available: boolean;
@@ -49,6 +50,11 @@ const MenuItemSchema = new Schema<IMenuItem>(
     },
 
     image: {
+      type: String,
+      trim: true,
+    },
+    
+    imagePublicId: {
       type: String,
       trim: true,
     },

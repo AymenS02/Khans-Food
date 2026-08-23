@@ -260,6 +260,42 @@ export default function MenuItemCreateForm({
         )}
       </div>
 
+      {/* Image */}
+
+      <div className="mt-5">
+        <label
+          htmlFor="image"
+          className="block text-sm font-semibold"
+        >
+          Food Image
+        </label>
+
+        <input
+          id="image"
+          name="image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          disabled={pending}
+          className="mt-2 block w-full rounded-xl border border-black/10 bg-background px-4 py-3 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:font-semibold file:text-white disabled:opacity-50"
+        />
+
+        <p className="mt-2 text-xs text-foreground/50">
+          JPEG, PNG, or WebP.
+          Maximum 5 MB.
+        </p>
+
+        {state.fieldErrors
+          ?.image?.[0] && (
+          <p className="mt-2 text-sm text-accent">
+            {
+              state
+                .fieldErrors
+                .image[0]
+            }
+          </p>
+        )}
+      </div>
+      
       {/* Available */}
 
       <label className="mt-5 flex cursor-pointer items-center gap-3">

@@ -14,6 +14,8 @@ export interface AdminMenuItem {
 
   description?: string;
 
+  image?: string;
+  
   price: number;
 
   category: {
@@ -92,6 +94,9 @@ export async function getAdminMenuItems(): Promise<
 
         slug:
           item.slug,
+
+        image:
+          item.image,
 
         description:
           item.description,
