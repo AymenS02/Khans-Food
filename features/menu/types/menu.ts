@@ -1,15 +1,11 @@
 export interface MenuItem {
   _id: string;
-
   name: string;
-
-  description: string;
-
+  slug: string;
+  description?: string;
   price: number;
-
   image?: string;
-
-  category: string;
-
+  categoryId: string;
   available: boolean;
+  displayOrder: number;
 }

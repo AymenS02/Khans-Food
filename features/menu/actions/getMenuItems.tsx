@@ -1,19 +1,52 @@
 "use server";
 
 import { connectToDatabase } from "@/lib/mongodb";
-import Menu from "@/models/MenuItem";
 
-export async function getMenuItems() {
+import MenuItem from "@/models/MenuItem";
+
+import type { MenuItem as MenuItemDTO } from "@/features/menu/types/menu";
+
+export async function getMenuItems(): Promise<
+  MenuItemDTO[]
+> {
   await connectToDatabase();
 
-  const items = await Menu.find({
-    available: true,
-  })
-    .sort({
-      category: 1,
-      name: 1,
+  const items =
+    await MenuItem.find({
+      available: true,
     })
-    .lean();
+      .sort({
+        displayOrder: 1,
+        name: 1,
+      })
+      .lean();
 
-  return JSON.parse(JSON.stringify(items));
+  return items.map((item) => ({
+    _id:
+      item._id.toString(),
+
+    name:
+      item.name,
+
+    slug:
+      item.slug,
+
+    description:
+      item.description,
+
+    price:
+      item.price,
+
+    image:
+      item.image,
+
+    categoryId:
+      item.categoryId.toString(),
+
+    available:
+      item.available,
+
+    displayOrder:
+      item.displayOrder,
+  }));
 }

@@ -18,23 +18,29 @@ export default function MenuCard({
 
   return (
     <article className="overflow-hidden rounded-2xl bg-white shadow-sm">
+      
       {/* Image */}
-      {item.image ? (
-        <div className="relative aspect-[4/3] w-full">
+      <div className="relative aspect-[4/3] overflow-hidden bg-black/5">
+        {item.image ? (
           <Image
             src={item.image}
             alt={item.name}
             fill
+            sizes="
+              (max-width: 640px) 100vw,
+              (max-width: 1024px) 50vw,
+              33vw
+            "
             className="object-cover"
           />
-        </div>
-      ) : (
-        <div className="flex aspect-[4/3] items-center justify-center bg-background">
-          <p className="text-sm text-foreground/50">
-            Image coming soon
-          </p>
-        </div>
-      )}
+        ) : (
+          <div className="flex h-full items-center justify-center px-6 text-center">
+            <span className="text-sm font-medium text-foreground/40">
+              No image available
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* Content */}
       <div className="p-5">

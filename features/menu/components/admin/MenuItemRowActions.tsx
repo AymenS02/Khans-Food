@@ -27,8 +27,10 @@ interface MenuItemRowActionsProps {
 
     description?: string;
 
-    price: number;
+    image?: string;
 
+    price: number;
+  
     category: {
       id: string;
       name: string;
@@ -160,6 +162,39 @@ export default function MenuItemRowActions({
                   item.id
                 }
               />
+
+              {/* Current Image */}
+
+              {item.image && (
+                <div>
+                  <p className="block text-sm font-semibold">
+                    Current Image
+                  </p>
+
+                  <div className="mt-2">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-24 w-24 rounded-xl object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {item.image && (
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    name="removeImage"
+                    disabled={pending}
+                    className="h-4 w-4"
+                  />
+
+                  <span className="text-sm font-semibold text-accent">
+                    Remove current image
+                  </span>
+                </label>
+              )}
 
               {/* Name */}
 
@@ -339,6 +374,45 @@ export default function MenuItemRowActions({
                       updateState
                         .fieldErrors
                         .description[0]
+                    }
+                  </p>
+                )}
+              </div>
+
+              {/* Replacement Image */}
+
+              <div>
+                <label
+                  htmlFor={`image-${item.id}`}
+                  className="block text-sm font-semibold"
+                >
+                  {item.image
+                    ? "Replace Image"
+                    : "Add Image"}
+                </label>
+
+                <input
+                  id={`image-${item.id}`}
+                  name="image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={pending}
+                  className="mt-2 block w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
+                />
+
+                <p className="mt-1 text-xs text-foreground/50">
+                  JPEG, PNG, or WebP.
+                  Maximum 5 MB.
+                </p>
+
+                {updateState
+                  .fieldErrors
+                  ?.image?.[0] && (
+                  <p className="mt-1 text-xs text-accent">
+                    {
+                      updateState
+                        .fieldErrors
+                        .image[0]
                     }
                   </p>
                 )}
