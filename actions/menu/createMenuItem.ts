@@ -10,7 +10,7 @@ import MenuItem from "@/models/MenuItem";
 import Category from "@/models/Category";
 
 import { menuItemSchema } from "@/features/menu/validators/menuItemSchema";
-import { createSlug } from "@/features/menu/utils/createSlug";
+import { createSlug } from "@/lib/utils/createSlug";
 
 import {
   MenuImageUploadError,

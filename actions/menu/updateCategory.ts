@@ -9,7 +9,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Category from "@/models/Category";
 
 import { categorySchema } from "@/features/menu/validators/categorySchema";
-import { createSlug } from "@/features/menu/utils/createSlug";
+import { createSlug } from "@/lib/utils/createSlug";
 
 export interface UpdateCategoryActionState {
   success: boolean;

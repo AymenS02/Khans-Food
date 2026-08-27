@@ -1,43 +1,42 @@
 "use server";
 
-import {
-  revalidatePath,
-} from "next/cache";
+import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
+
 import { connectToDatabase } from "@/lib/mongodb";
 
-import Category from "@/models/Category";
+import CateringItem from "@/models/CateringItem";
 
-import { categorySchema } from "@/features/menu/validators/categorySchema";
+import { cateringItemSchema } from "@/features/catering/validators/cateringItemSchema";
 
 import { createSlug } from "@/lib/utils/createSlug";
 
-export interface CategoryActionState {
+export interface CreateCateringItemActionState {
   success: boolean;
 
   message: string;
 
   fieldErrors?: {
     name?: string[];
+    description?: string[];
+    price?: string[];
+    pricingType?: string[];
+    category?: string[];
+    displayOrder?: string[];
   };
 }
 
-export async function createCategory(
+export async function createCateringItem(
   _previousState:
-    CategoryActionState,
+    CreateCateringItemActionState,
 
   formData: FormData
-): Promise<CategoryActionState> {
+): Promise<CreateCateringItemActionState> {
   /*
    * ==========================================
-   * 1. SECURITY
+   * 1. AUTHORIZATION
    * ==========================================
-   *
-   * The admin layout protecting the PAGE
-   * is not enough.
-   *
-   * Server Actions must protect themselves.
    */
 
   const session =
@@ -50,8 +49,9 @@ export async function createCategory(
   ) {
     return {
       success: false,
+
       message:
-        "You are not authorized to create categories.",
+        "You are not authorized to create catering items.",
     };
   }
 
@@ -62,10 +62,31 @@ export async function createCategory(
    */
 
   const parsed =
-    categorySchema.safeParse({
+    cateringItemSchema.safeParse({
       name:
+        formData.get("name"),
+
+      description:
         formData.get(
-          "name"
+          "description"
+        ) || undefined,
+
+      price:
+        formData.get("price"),
+
+      pricingType:
+        formData.get(
+          "pricingType"
+        ),
+
+      category:
+        formData.get(
+          "category"
+        ) || undefined,
+
+      displayOrder:
+        formData.get(
+          "displayOrder"
         ),
     });
 
@@ -74,7 +95,7 @@ export async function createCategory(
       success: false,
 
       message:
-        "Please fix the category information.",
+        "Please fix the catering item information.",
 
       fieldErrors:
         parsed.error.flatten()
@@ -82,14 +103,14 @@ export async function createCategory(
     };
   }
 
-  const name =
-    parsed.data.name;
-
-  /*
-   * ==========================================
-   * 3. CREATE SLUG
-   * ==========================================
-   */
+  const {
+    name,
+    description,
+    price,
+    pricingType,
+    category,
+    displayOrder,
+  } = parsed.data;
 
   const slug =
     createSlug(name);
@@ -97,57 +118,75 @@ export async function createCategory(
   if (!slug) {
     return {
       success: false,
+
       message:
-        "Unable to create a valid category slug.",
+        "Unable to create a valid catering item slug.",
     };
   }
+
+  /*
+   * ==========================================
+   * 3. AVAILABILITY
+   * ==========================================
+   */
+
+  const available =
+    formData.get(
+      "available"
+    ) === "on";
 
   await connectToDatabase();
 
   /*
    * ==========================================
-   * 4. PREVENT DUPLICATES
+   * 4. DUPLICATE CHECK
    * ==========================================
    */
 
-  const existingCategory =
-    await Category.findOne({
+  const existingItem =
+    await CateringItem.findOne({
       slug,
     })
       .select("_id")
       .lean();
 
-  if (existingCategory) {
+  if (existingItem) {
     return {
       success: false,
 
       message:
-        "A category with this name already exists.",
+        "A catering item with this name already exists.",
     };
   }
 
   /*
    * ==========================================
-   * 5. CREATE CATEGORY
+   * 5. CREATE
    * ==========================================
    */
 
   try {
-    await Category.create({
+    await CateringItem.create({
       name,
       slug,
+
+      description:
+        description ||
+        undefined,
+
+      price,
+
+      pricingType,
+
+      category:
+        category ||
+        undefined,
+
+      available,
+
+      displayOrder,
     });
   } catch (error) {
-    /*
-     * Still handle duplicate-key errors.
-     *
-     * Why?
-     *
-     * Two requests could theoretically
-     * pass findOne() at nearly the same
-     * time.
-     */
-
     if (
       isDuplicateKeyError(
         error
@@ -157,12 +196,12 @@ export async function createCategory(
         success: false,
 
         message:
-          "A category with this name already exists.",
+          "A catering item with this name already exists.",
       };
     }
 
     console.error(
-      "Unable to create category:",
+      "Unable to create catering item:",
       error
     );
 
@@ -170,22 +209,26 @@ export async function createCategory(
       success: false,
 
       message:
-        "Unable to create category.",
+        "Unable to create catering item.",
     };
   }
 
   /*
    * ==========================================
-   * 6. REFRESH RELEVANT PAGES
+   * 6. REFRESH
    * ==========================================
    */
 
   revalidatePath(
-    "/admin/menu/categories"
+    "/admin/catering/items"
   );
 
   revalidatePath(
-    "/menu"
+    "/catering"
+  );
+
+  revalidatePath(
+    "/catering/custom"
   );
 
   return {
@@ -195,13 +238,6 @@ export async function createCategory(
       `${name} was created successfully.`,
   };
 }
-
-/*
- * ==========================================
- * HELPERS
- * ==========================================
- */
-
 
 function isDuplicateKeyError(
   error: unknown
