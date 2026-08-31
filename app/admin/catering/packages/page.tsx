@@ -6,6 +6,8 @@ import { getAdminCateringPackages } from "@/actions/catering/getAdminCateringPac
 
 import CateringPackageCreateForm from "@/features/catering/components/admin/CateringPackageCreateForm";
 
+import CateringPackageRowActions from "@/features/catering/components/admin/CateringPackageRowActions";
+
 export default async function AdminCateringPackagesPage() {
   const [
     cateringItems,
@@ -41,6 +43,17 @@ export default async function AdminCateringPackagesPage() {
             item.pricingType,
         })
       );
+  
+  const editableItems =
+    cateringItems.map(
+      (item) => ({
+        id:
+          item.id,
+
+        name:
+          item.name,
+      })
+    );
 
   return (
     <main className="space-y-8">
@@ -184,13 +197,16 @@ export default async function AdminCateringPackagesPage() {
                         Guests:
                       </span>{" "}
                       <strong>
-                        {
-                          pkg.minimumGuests
-                        }
-
-                        {pkg.maximumGuests
-                          ? `–${pkg.maximumGuests}`
-                          : "+"}
+                        {pkg.minimumGuests !==
+                        undefined
+                          ? pkg.maximumGuests !==
+                            undefined
+                            ? `${pkg.minimumGuests}–${pkg.maximumGuests}`
+                            : `${pkg.minimumGuests}+`
+                          : pkg.maximumGuests !==
+                              undefined
+                            ? `Up to ${pkg.maximumGuests}`
+                            : "No limit"}
                       </strong>
                     </div>
 
@@ -236,6 +252,17 @@ export default async function AdminCateringPackagesPage() {
                         )
                       )}
                     </ul>
+                  </div>
+
+                  {/* Package actions */}
+
+                  <div className="mt-5 border-t border-black/10 pt-5">
+                    <CateringPackageRowActions
+                      pkg={pkg}
+                      cateringItems={
+                        editableItems
+                      }
+                    />
                   </div>
                 </article>
               )
