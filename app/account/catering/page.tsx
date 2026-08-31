@@ -141,6 +141,15 @@ export default async function CustomerCateringRequestsPage() {
                   )}
                 </p>
 
+                <div className="mt-5 border-t border-black/10 pt-5">
+                  <Link
+                    href={`/account/catering/${request.id}`}
+                    className="text-sm font-semibold text-primary hover:underline"
+                  >
+                    View Request Details →
+                  </Link>
+                </div>
+
                 {/* Approved Order */}
 
                 {request.status ===
