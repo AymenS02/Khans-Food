@@ -65,6 +65,8 @@ export interface IOrder extends Document {
     notes?: string;
   };
 
+  orderConfirmationEmailSentAt?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -246,6 +248,10 @@ const OrderSchema = new Schema<IOrder>(
         trim: true,
         maxlength: 1000,
       },
+    },
+
+    orderConfirmationEmailSentAt: {
+      type: Date,
     },
   },
   {

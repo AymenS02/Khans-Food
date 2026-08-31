@@ -5,6 +5,8 @@ import { stripe } from "@/lib/stripe";
 import Order from "@/models/Order";
 import { connectToDatabase } from "@/lib/mongodb";
 
+import { sendRegularOrderConfirmationEmail } from "@/features/email/services/sendRegularOrderConfirmationEmail";
+
 export async function POST(request: Request) {
   const body = await request.text();
 
@@ -107,6 +109,17 @@ export async function POST(request: Request) {
         order.orderStatus = "confirmed";
 
         await order.save();
+
+        try {
+          await sendRegularOrderConfirmationEmail(
+            orderId
+          );
+        } catch (error) {
+          console.error(
+            "Order was paid, but confirmation email failed:",
+            error
+          );
+        }
 
         console.log(
           `Order ${orderId} marked as paid.`
