@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
-
 import { connectToDatabase } from "@/lib/mongodb";
 
 import CateringItem from "@/models/CateringItem";
@@ -11,6 +10,12 @@ import CateringItem from "@/models/CateringItem";
 import { cateringItemSchema } from "@/features/catering/validators/cateringItemSchema";
 
 import { createSlug } from "@/lib/utils/createSlug";
+
+import {
+  CateringItemImageUploadError,
+  deleteCateringItemImage,
+  uploadCateringItemImage,
+} from "@/features/catering/services/cateringItemImage";
 
 export interface CreateCateringItemActionState {
   success: boolean;
@@ -24,13 +29,12 @@ export interface CreateCateringItemActionState {
     pricingType?: string[];
     category?: string[];
     displayOrder?: string[];
+    image?: string[];
   };
 }
 
 export async function createCateringItem(
-  _previousState:
-    CreateCateringItemActionState,
-
+  _previousState: CreateCateringItemActionState,
   formData: FormData
 ): Promise<CreateCateringItemActionState> {
   /*
@@ -39,17 +43,14 @@ export async function createCateringItem(
    * ==========================================
    */
 
-  const session =
-    await auth();
+  const session = await auth();
 
   if (
     !session?.user ||
-    session.user.role !==
-      "admin"
+    session.user.role !== "admin"
   ) {
     return {
       success: false,
-
       message:
         "You are not authorized to create catering items.",
     };
@@ -57,7 +58,7 @@ export async function createCateringItem(
 
   /*
    * ==========================================
-   * 2. VALIDATE INPUT
+   * 2. VALIDATE NORMAL FORM FIELDS
    * ==========================================
    */
 
@@ -67,27 +68,21 @@ export async function createCateringItem(
         formData.get("name"),
 
       description:
-        formData.get(
-          "description"
-        ) || undefined,
+        formData.get("description") ||
+        undefined,
 
       price:
         formData.get("price"),
 
       pricingType:
-        formData.get(
-          "pricingType"
-        ),
+        formData.get("pricingType"),
 
       category:
-        formData.get(
-          "category"
-        ) || undefined,
+        formData.get("category") ||
+        undefined,
 
       displayOrder:
-        formData.get(
-          "displayOrder"
-        ),
+        formData.get("displayOrder"),
     });
 
   if (!parsed.success) {
@@ -98,8 +93,7 @@ export async function createCateringItem(
         "Please fix the catering item information.",
 
       fieldErrors:
-        parsed.error.flatten()
-          .fieldErrors,
+        parsed.error.flatten().fieldErrors,
     };
   }
 
@@ -112,13 +106,18 @@ export async function createCateringItem(
     displayOrder,
   } = parsed.data;
 
+  /*
+   * ==========================================
+   * 3. CREATE SLUG
+   * ==========================================
+   */
+
   const slug =
     createSlug(name);
 
   if (!slug) {
     return {
       success: false,
-
       message:
         "Unable to create a valid catering item slug.",
     };
@@ -126,20 +125,40 @@ export async function createCateringItem(
 
   /*
    * ==========================================
-   * 3. AVAILABILITY
+   * 4. READ OPTIONAL IMAGE
+   * ==========================================
+   */
+
+  const imageValue =
+    formData.get("image");
+
+  const imageFile =
+    imageValue instanceof File &&
+    imageValue.size > 0
+      ? imageValue
+      : undefined;
+
+  /*
+   * ==========================================
+   * 5. AVAILABILITY
    * ==========================================
    */
 
   const available =
-    formData.get(
-      "available"
-    ) === "on";
+    formData.get("available") ===
+    "on";
+
+  /*
+   * ==========================================
+   * 6. DATABASE
+   * ==========================================
+   */
 
   await connectToDatabase();
 
   /*
    * ==========================================
-   * 4. DUPLICATE CHECK
+   * 7. DUPLICATE CHECK
    * ==========================================
    */
 
@@ -161,7 +180,64 @@ export async function createCateringItem(
 
   /*
    * ==========================================
-   * 5. CREATE
+   * 8. UPLOAD OPTIONAL IMAGE
+   * ==========================================
+   *
+   * We upload before MongoDB creation.
+   *
+   * If MongoDB creation fails afterward,
+   * we clean up the uploaded image.
+   */
+
+  let uploadedImage:
+    | {
+        url: string;
+        publicId: string;
+      }
+    | undefined;
+
+  if (imageFile) {
+    try {
+      uploadedImage =
+        await uploadCateringItemImage(
+          imageFile
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        CateringItemImageUploadError
+      ) {
+        return {
+          success: false,
+
+          message:
+            "Please fix the catering item image.",
+
+          fieldErrors: {
+            image: [
+              error.message,
+            ],
+          },
+        };
+      }
+
+      console.error(
+        "Unable to upload catering item image:",
+        error
+      );
+
+      return {
+        success: false,
+
+        message:
+          "Unable to upload catering item image.",
+      };
+    }
+  }
+
+  /*
+   * ==========================================
+   * 9. CREATE CATERING ITEM
    * ==========================================
    */
 
@@ -173,6 +249,12 @@ export async function createCateringItem(
       description:
         description ||
         undefined,
+
+      image:
+        uploadedImage?.url,
+
+      imagePublicId:
+        uploadedImage?.publicId,
 
       price,
 
@@ -187,6 +269,28 @@ export async function createCateringItem(
       displayOrder,
     });
   } catch (error) {
+    /*
+     * Cloudinary upload succeeded,
+     * but MongoDB creation failed.
+     *
+     * Remove the now-orphaned image.
+     */
+
+    if (uploadedImage) {
+      try {
+        await deleteCateringItemImage(
+          uploadedImage.publicId
+        );
+      } catch (
+        cleanupError
+      ) {
+        console.error(
+          "Unable to clean up catering image after failed create:",
+          cleanupError
+        );
+      }
+    }
+
     if (
       isDuplicateKeyError(
         error
@@ -215,10 +319,21 @@ export async function createCateringItem(
 
   /*
    * ==========================================
-   * 6. REFRESH
+   * 10. REVALIDATE
    * ==========================================
    */
 
+  revalidateCatering();
+
+  return {
+    success: true,
+
+    message:
+      `${name} was created successfully.`,
+  };
+}
+
+function revalidateCatering() {
   revalidatePath(
     "/admin/catering/items"
   );
@@ -230,13 +345,6 @@ export async function createCateringItem(
   revalidatePath(
     "/catering/custom"
   );
-
-  return {
-    success: true,
-
-    message:
-      `${name} was created successfully.`,
-  };
 }
 
 function isDuplicateKeyError(
@@ -245,8 +353,7 @@ function isDuplicateKeyError(
   code: number;
 } {
   return (
-    typeof error ===
-      "object" &&
+    typeof error === "object" &&
     error !== null &&
     "code" in error &&
     (

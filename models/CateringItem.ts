@@ -15,7 +15,7 @@ export interface ICateringItem
 
   description?: string;
   image?: string;
-
+  imagePublicId?: string;
   price: number;
 
   pricingType: CateringPricingType;
@@ -57,6 +57,11 @@ const CateringItemSchema =
       },
 
       image: {
+        type: String,
+        trim: true,
+      },
+
+      imagePublicId: {
         type: String,
         trim: true,
       },

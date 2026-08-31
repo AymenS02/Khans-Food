@@ -24,6 +24,8 @@ interface CateringItemRowActionsProps {
     description?: string;
     price: number;
 
+    image?: string;
+
     pricingType:
       | "flat"
       | "per_person";
@@ -298,6 +300,73 @@ export default function CateringItemRowActions({
                       updateState
                         .fieldErrors
                         .displayOrder[0]
+                    }
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <p className="text-sm font-semibold">
+                  Image
+                </p>
+
+                {item.image ? (
+                  <div className="mt-3">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-32 w-44 rounded-lg object-cover"
+                    />
+
+                    <p className="mt-2 text-xs text-foreground/50">
+                      Current image
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-sm text-foreground/50">
+                    No image currently uploaded.
+                  </p>
+                )}
+
+                <div className="mt-4">
+                  <label className="block text-xs font-semibold">
+                    Replace Image
+                  </label>
+
+                  <input
+                    name="image"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={pending}
+                    className="mt-2 block w-full text-sm"
+                  />
+
+                  <p className="mt-1 text-xs text-foreground/50">
+                    JPEG, PNG, or WebP.
+                    Maximum 5 MB.
+                  </p>
+                </div>
+
+                {item.image && (
+                  <label className="mt-4 flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name="removeImage"
+                      disabled={pending}
+                    />
+
+                    Remove current image
+                  </label>
+                )}
+
+                {updateState
+                  .fieldErrors
+                  ?.image?.[0] && (
+                  <p className="mt-2 text-xs text-accent">
+                    {
+                      updateState
+                        .fieldErrors
+                        .image[0]
                     }
                   </p>
                 )}

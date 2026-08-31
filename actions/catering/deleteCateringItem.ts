@@ -10,6 +10,10 @@ import CateringItem from "@/models/CateringItem";
 import CateringPackage from "@/models/CateringPackage";
 import CateringRequest from "@/models/CateringRequest";
 
+import {
+  deleteCateringItemImage,
+} from "@/features/catering/services/cateringItemImage";
+
 export interface DeleteCateringItemActionState {
   success: boolean;
   message: string;
@@ -116,8 +120,24 @@ export async function deleteCateringItem(
     };
   }
 
+  const imagePublicId =
+    item.imagePublicId;
+
   await item.deleteOne();
 
+  if (imagePublicId) {
+    try {
+      await deleteCateringItemImage(
+        imagePublicId
+      );
+    } catch (error) {
+      console.error(
+        "Catering item deleted, but Cloudinary cleanup failed:",
+        error
+      );
+    }
+  }
+  
   revalidatePath(
     "/admin/catering/items"
   );
