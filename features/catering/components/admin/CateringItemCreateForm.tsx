@@ -60,6 +60,43 @@ export default function CateringItemCreateForm() {
         </p>
       </div>
 
+      {/* Package Image */}
+
+      <div className="mt-5">
+        <label
+          htmlFor="image"
+          className="block text-sm font-semibold"
+        >
+          Package Image
+        </label>
+
+        <input
+          id="image"
+          name="image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          disabled={pending}
+          className="mt-2 block w-full text-sm"
+        />
+
+        <p className="mt-2 text-xs text-foreground/50">
+          Optional. JPEG, PNG, or WebP.
+          Maximum 5 MB.
+        </p>
+
+        {state.fieldErrors
+          ?.image?.[0] && (
+          <p className="mt-2 text-sm text-accent">
+            {
+              state
+                .fieldErrors
+                .image[0]
+            }
+          </p>
+        )}
+      </div>
+
+
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         {/* Name */}
 

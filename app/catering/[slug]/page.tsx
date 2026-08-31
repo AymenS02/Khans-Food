@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import PackageCateringRequestForm from "@/features/catering/components/PackageCateringRequestForm";
 import { getPublicCateringPackageBySlug } from "@/features/catering/services/getPublicCateringPackageBySlug";
@@ -35,7 +36,30 @@ export default async function CateringPackagePage({
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
         {/* Package Information */}
         <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+          {/* Package Image */}
+
+          <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-black/5">
+            {cateringPackage.image ? (
+              <Image
+                src={cateringPackage.image}
+                alt={cateringPackage.name}
+                fill
+                sizes="
+                  (max-width: 1024px) 100vw,
+                  700px
+                "
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center px-6 text-center">
+                <span className="text-sm font-medium text-foreground/40">
+                  No package image available
+                </span>
+              </div>
+            )}
+          </div>
+
+          <p className="mt-8 text-sm font-semibold uppercase tracking-[0.15em] text-primary">
             Catering Package
           </p>
 

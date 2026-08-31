@@ -135,6 +135,16 @@ export default async function AdminCateringPackagesPage() {
                   }
                   className="rounded-xl border border-black/10 p-5"
                 >
+                  {pkg.image && (
+                    <div className="mb-5 overflow-hidden rounded-xl">
+                      <img
+                        src={pkg.image}
+                        alt={pkg.name}
+                        className="h-52 w-full object-cover"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                     <div>
                       <div className="flex flex-wrap items-center gap-3">

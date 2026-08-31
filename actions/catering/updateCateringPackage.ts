@@ -10,10 +10,18 @@ import CateringItem from "@/models/CateringItem";
 import CateringPackage from "@/models/CateringPackage";
 
 import { cateringPackageSchema } from "@/features/catering/validators/cateringPackageSchema";
+
+import {
+  CateringPackageImageUploadError,
+  deleteCateringPackageImage,
+  uploadCateringPackageImage,
+} from "@/features/catering/services/cateringPackageImage";
+
 import { createSlug } from "@/lib/utils/createSlug";
 
 export interface UpdateCateringPackageActionState {
   success: boolean;
+
   message: string;
 
   fieldErrors?: {
@@ -25,17 +33,21 @@ export interface UpdateCateringPackageActionState {
     maximumGuests?: string[];
     displayOrder?: string[];
     items?: string[];
+    image?: string[];
   };
 }
 
 export async function updateCateringPackage(
-  _previousState:
-    UpdateCateringPackageActionState,
-
+  _previousState: UpdateCateringPackageActionState,
   formData: FormData
 ): Promise<UpdateCateringPackageActionState> {
-  const session =
-    await auth();
+  /*
+   * ==========================================
+   * 1. AUTHORIZATION
+   * ==========================================
+   */
+
+  const session = await auth();
 
   if (
     !session?.user ||
@@ -43,31 +55,48 @@ export async function updateCateringPackage(
   ) {
     return {
       success: false,
+
       message:
         "You are not authorized to update catering packages.",
     };
   }
+
+  /*
+   * ==========================================
+   * 2. VALIDATE PACKAGE ID
+   * ==========================================
+   */
 
   const packageId =
     formData.get("packageId");
 
   if (
     typeof packageId !== "string" ||
-    !Types.ObjectId.isValid(
-      packageId
-    )
+    !Types.ObjectId.isValid(packageId)
   ) {
     return {
       success: false,
+
       message:
         "Invalid catering package.",
     };
   }
 
   /*
-   * Parse the item selection generated
-   * by the client component.
+   * ==========================================
+   * 3. PARSE PACKAGE ITEMS
+   * ==========================================
+   *
+   * The client sends:
+   *
+   * [
+   *   {
+   *     cateringItemId: "...",
+   *     quantity: 2
+   *   }
+   * ]
    */
+
   const itemsJson =
     formData.get("itemsJson");
 
@@ -77,8 +106,7 @@ export async function updateCateringPackage(
   }[] = [];
 
   if (
-    typeof itemsJson ===
-    "string"
+    typeof itemsJson === "string"
   ) {
     try {
       items =
@@ -86,11 +114,18 @@ export async function updateCateringPackage(
     } catch {
       return {
         success: false,
+
         message:
           "Invalid package item selection.",
       };
     }
   }
+
+  /*
+   * ==========================================
+   * 4. VALIDATE FORM DATA
+   * ==========================================
+   */
 
   const parsed =
     cateringPackageSchema.safeParse({
@@ -98,32 +133,23 @@ export async function updateCateringPackage(
         formData.get("name"),
 
       description:
-        formData.get(
-          "description"
-        ) || undefined,
+        formData.get("description") ||
+        undefined,
 
       price:
         formData.get("price"),
 
       pricingType:
-        formData.get(
-          "pricingType"
-        ),
+        formData.get("pricingType"),
 
       minimumGuests:
-        formData.get(
-          "minimumGuests"
-        ),
+        formData.get("minimumGuests"),
 
       maximumGuests:
-        formData.get(
-          "maximumGuests"
-        ),
+        formData.get("maximumGuests"),
 
       displayOrder:
-        formData.get(
-          "displayOrder"
-        ),
+        formData.get("displayOrder"),
 
       items,
     });
@@ -136,13 +162,64 @@ export async function updateCateringPackage(
         "Please fix the catering package information.",
 
       fieldErrors:
-        parsed.error.flatten()
-          .fieldErrors,
+        parsed.error.flatten().fieldErrors,
     };
   }
 
   const data =
     parsed.data;
+
+  /*
+   * ==========================================
+   * 5. READ IMAGE INSTRUCTIONS
+   * ==========================================
+   */
+
+  const imageValue =
+    formData.get("image");
+
+  const replacementImage =
+    imageValue instanceof File &&
+    imageValue.size > 0
+      ? imageValue
+      : undefined;
+
+  const removeImage =
+    formData.get("removeImage") ===
+    "on";
+
+  /*
+   * We don't allow:
+   *
+   * Replace image ☑
+   * Remove image  ☑
+   *
+   * at the same time.
+   */
+
+  if (
+    replacementImage &&
+    removeImage
+  ) {
+    return {
+      success: false,
+
+      message:
+        "Choose either a replacement image or remove the current image, not both.",
+
+      fieldErrors: {
+        image: [
+          "Choose either replacement or removal.",
+        ],
+      },
+    };
+  }
+
+  /*
+   * ==========================================
+   * 6. VALIDATE CATERING ITEM IDS
+   * ==========================================
+   */
 
   const invalidItemId =
     data.items.some(
@@ -161,10 +238,14 @@ export async function updateCateringPackage(
     };
   }
 
+  /*
+   * ==========================================
+   * 7. CREATE SLUG
+   * ==========================================
+   */
+
   const slug =
-    createSlug(
-      data.name
-    );
+    createSlug(data.name);
 
   if (!slug) {
     return {
@@ -175,7 +256,19 @@ export async function updateCateringPackage(
     };
   }
 
+  /*
+   * ==========================================
+   * 8. CONNECT TO DATABASE
+   * ==========================================
+   */
+
   await connectToDatabase();
+
+  /*
+   * ==========================================
+   * 9. LOAD PACKAGE
+   * ==========================================
+   */
 
   const pkg =
     await CateringPackage.findById(
@@ -185,15 +278,36 @@ export async function updateCateringPackage(
   if (!pkg) {
     return {
       success: false,
+
       message:
         "Catering package not found.",
     };
   }
 
   /*
-   * Prevent another package from taking
-   * the same slug.
+   * Store these before changing anything.
+   *
+   * oldSlug:
+   * Allows us to revalidate the old public URL
+   * if the package was renamed.
+   *
+   * oldImagePublicId:
+   * Allows us to remove the old Cloudinary
+   * asset AFTER MongoDB safely saves.
    */
+
+  const oldSlug =
+    pkg.slug;
+
+  const oldImagePublicId =
+    pkg.imagePublicId;
+
+  /*
+   * ==========================================
+   * 10. DUPLICATE SLUG CHECK
+   * ==========================================
+   */
+
   const duplicate =
     await CateringPackage.findOne({
       slug,
@@ -215,14 +329,21 @@ export async function updateCateringPackage(
   }
 
   /*
-   * Reload every CateringItem from MongoDB.
+   * ==========================================
+   * 11. RELOAD CATERING ITEMS FROM DATABASE
+   * ==========================================
    *
-   * The browser only tells us:
+   * Never trust names supplied by the browser.
    *
-   * ID + quantity
+   * Browser controls:
+   * - CateringItem ID
+   * - quantity
    *
-   * It does NOT get to decide the item name.
+   * MongoDB controls:
+   * - actual item
+   * - actual name
    */
+
   const itemIds =
     data.items.map(
       (item) =>
@@ -248,6 +369,12 @@ export async function updateCateringPackage(
     };
   }
 
+  /*
+   * ==========================================
+   * 12. BUILD ITEM LOOKUP
+   * ==========================================
+   */
+
   const itemMap =
     new Map(
       cateringItems.map(
@@ -258,6 +385,12 @@ export async function updateCateringPackage(
       )
     );
 
+  /*
+   * ==========================================
+   * 13. BUILD PACKAGE ITEM SNAPSHOTS
+   * ==========================================
+   */
+
   const packageItems =
     data.items.map(
       (selected) => {
@@ -267,6 +400,10 @@ export async function updateCateringPackage(
           );
 
         if (!item) {
+          /*
+           * This should be impossible because
+           * we checked the DB result count above.
+           */
           throw new Error(
             "Catering item unexpectedly missing."
           );
@@ -277,8 +414,7 @@ export async function updateCateringPackage(
             item._id,
 
           /*
-           * Refresh the package snapshot
-           * whenever the package is edited.
+           * Snapshot the current item name.
            */
           name:
             item.name,
@@ -288,6 +424,71 @@ export async function updateCateringPackage(
         };
       }
     );
+
+  /*
+   * ==========================================
+   * 14. UPLOAD REPLACEMENT IMAGE
+   * ==========================================
+   *
+   * IMPORTANT:
+   *
+   * We upload the NEW image before changing
+   * MongoDB.
+   *
+   * We do NOT delete the OLD image yet.
+   */
+
+  let uploadedImage:
+    | {
+        url: string;
+        publicId: string;
+      }
+    | undefined;
+
+  if (replacementImage) {
+    try {
+      uploadedImage =
+        await uploadCateringPackageImage(
+          replacementImage
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        CateringPackageImageUploadError
+      ) {
+        return {
+          success: false,
+
+          message:
+            "Please fix the catering package image.",
+
+          fieldErrors: {
+            image: [
+              error.message,
+            ],
+          },
+        };
+      }
+
+      console.error(
+        "Unable to upload replacement package image:",
+        error
+      );
+
+      return {
+        success: false,
+
+        message:
+          "Unable to upload replacement package image.",
+      };
+    }
+  }
+
+  /*
+   * ==========================================
+   * 15. APPLY NORMAL FIELD CHANGES
+   * ==========================================
+   */
 
   pkg.name =
     data.name;
@@ -317,9 +518,60 @@ export async function updateCateringPackage(
   pkg.displayOrder =
     data.displayOrder;
 
+  /*
+   * ==========================================
+   * 16. APPLY IMAGE CHANGES
+   * ==========================================
+   */
+
+  if (removeImage) {
+    pkg.image =
+      undefined;
+
+    pkg.imagePublicId =
+      undefined;
+  }
+
+  if (uploadedImage) {
+    pkg.image =
+      uploadedImage.url;
+
+    pkg.imagePublicId =
+      uploadedImage.publicId;
+  }
+
+  /*
+   * ==========================================
+   * 17. SAVE PACKAGE
+   * ==========================================
+   */
+
   try {
     await pkg.save();
   } catch (error) {
+    /*
+     * If the replacement image uploaded but
+     * MongoDB rejected the update, remove the
+     * NEW image.
+     *
+     * The old image is still untouched.
+     */
+
+    if (uploadedImage) {
+      try {
+        await deleteCateringPackageImage(
+          uploadedImage.publicId
+        );
+      } catch (
+        cleanupError
+      ) {
+        console.error(
+          "Unable to clean replacement package image after failed update:",
+          cleanupError
+        );
+      }
+    }
+
     if (
       isDuplicateKeyError(
         error
@@ -346,17 +598,51 @@ export async function updateCateringPackage(
     };
   }
 
-  revalidateCateringPackages();
+  /*
+   * ==========================================
+   * 18. CLEAN UP OLD CLOUDINARY IMAGE
+   * ==========================================
+   *
+   * MongoDB has successfully saved.
+   *
+   * We can now safely delete the previous
+   * Cloudinary image if it was replaced or
+   * removed.
+   */
 
-  return {
-    success: true,
+  const imageChanged =
+    removeImage ||
+    Boolean(uploadedImage);
 
-    message:
-      `${pkg.name} was updated successfully.`,
-  };
-}
+  if (
+    imageChanged &&
+    oldImagePublicId
+  ) {
+    try {
+      await deleteCateringPackageImage(
+        oldImagePublicId
+      );
+    } catch (error) {
+      /*
+       * Do not report the whole update as failed.
+       *
+       * The package is already correct in MongoDB.
+       * This is only an asset-cleanup issue.
+       */
 
-function revalidateCateringPackages() {
+      console.error(
+        "Package updated, but old Cloudinary image cleanup failed:",
+        error
+      );
+    }
+  }
+
+  /*
+   * ==========================================
+   * 19. REVALIDATE PAGES
+   * ==========================================
+   */
+
   revalidatePath(
     "/admin/catering/packages"
   );
@@ -364,7 +650,48 @@ function revalidateCateringPackages() {
   revalidatePath(
     "/catering"
   );
+
+  /*
+   * Revalidate the previous slug.
+   *
+   * This matters if:
+   *
+   * Family Package
+   * ↓ rename
+   * Large Family Package
+   */
+
+  revalidatePath(
+    `/catering/package/${oldSlug}`
+  );
+
+  /*
+   * Revalidate the current/new slug too.
+   */
+
+  revalidatePath(
+    `/catering/package/${slug}`
+  );
+
+  /*
+   * ==========================================
+   * 20. SUCCESS
+   * ==========================================
+   */
+
+  return {
+    success: true,
+
+    message:
+      `${data.name} was updated successfully.`,
+  };
 }
+
+/*
+ * ============================================
+ * DUPLICATE KEY HELPER
+ * ============================================
+ */
 
 function isDuplicateKeyError(
   error: unknown

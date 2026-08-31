@@ -19,6 +19,12 @@ import { createSlug } from "@/lib/utils/createSlug";
 
 import { cateringPackageSchema } from "@/features/catering/validators/cateringPackageSchema";
 
+import {
+  CateringPackageImageUploadError,
+  deleteCateringPackageImage,
+  uploadCateringPackageImage,
+} from "@/features/catering/services/cateringPackageImage";
+
 export interface CreateCateringPackageActionState {
   success: boolean;
 
@@ -33,6 +39,7 @@ export interface CreateCateringPackageActionState {
     maximumGuests?: string[];
     displayOrder?: string[];
     items?: string[];
+    image?: string[];
   };
 }
 
@@ -164,7 +171,7 @@ export async function createCateringPackage(
 
   const data =
     parsed.data;
-
+  
   /*
    * ==========================================
    * 4. VALIDATE OBJECT IDS
@@ -203,6 +210,15 @@ export async function createCateringPackage(
   }
 
   await connectToDatabase();
+
+  const imageValue =
+    formData.get("image");
+
+  const imageFile =
+    imageValue instanceof File &&
+    imageValue.size > 0
+      ? imageValue
+      : undefined;
 
   /*
    * ==========================================
@@ -325,6 +341,53 @@ export async function createCateringPackage(
       "available"
     ) === "on";
 
+
+    let uploadedImage:
+    | {
+        url: string;
+        publicId: string;
+      }
+    | undefined;
+
+  if (imageFile) {
+    try {
+      uploadedImage =
+        await uploadCateringPackageImage(
+          imageFile
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        CateringPackageImageUploadError
+      ) {
+        return {
+          success: false,
+
+          message:
+            "Please fix the catering package image.",
+
+          fieldErrors: {
+            image: [
+              error.message,
+            ],
+          },
+        };
+      }
+
+      console.error(
+        "Unable to upload catering package image:",
+        error
+      );
+
+      return {
+        success: false,
+
+        message:
+          "Unable to upload catering package image.",
+      };
+    }
+  }
+
   /*
    * ==========================================
    * 8. CREATE PACKAGE
@@ -341,6 +404,12 @@ export async function createCateringPackage(
       description:
         data.description ||
         undefined,
+
+      image:
+        uploadedImage?.url,
+
+      imagePublicId:
+        uploadedImage?.publicId,
 
       price:
         data.price,
@@ -363,6 +432,22 @@ export async function createCateringPackage(
         data.displayOrder,
     });
   } catch (error) {
+
+    if (uploadedImage) {
+      try {
+        await deleteCateringPackageImage(
+          uploadedImage.publicId
+        );
+      } catch (
+        cleanupError
+      ) {
+        console.error(
+          "Unable to clean package image after failed create:",
+          cleanupError
+        );
+      }
+    }
+
     if (
       isDuplicateKeyError(
         error

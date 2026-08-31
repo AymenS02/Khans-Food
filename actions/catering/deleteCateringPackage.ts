@@ -9,6 +9,10 @@ import { connectToDatabase } from "@/lib/mongodb";
 import CateringPackage from "@/models/CateringPackage";
 import CateringRequest from "@/models/CateringRequest";
 
+import {
+  deleteCateringPackageImage,
+} from "@/features/catering/services/cateringPackageImage";
+
 export interface DeleteCateringPackageActionState {
   success: boolean;
   message: string;
@@ -94,7 +98,23 @@ export async function deleteCateringPackage(
     };
   }
 
+  const imagePublicId =
+    pkg.imagePublicId;
+
   await pkg.deleteOne();
+
+  if (imagePublicId) {
+    try {
+      await deleteCateringPackageImage(
+        imagePublicId
+      );
+    } catch (error) {
+      console.error(
+        "Catering package deleted, but Cloudinary cleanup failed:",
+        error
+      );
+    }
+  }
 
   revalidatePath(
     "/admin/catering/packages"
