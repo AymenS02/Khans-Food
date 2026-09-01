@@ -7,6 +7,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 
 import { sendPaidOrderConfirmationEmail } from "@/features/email/services/sendPaidOrderConfirmationEmail";
 
+const STRIPE_ORDER_CURRENCY = "cad";
+
 export async function POST(request: Request) {
   const body = await request.text();
 
@@ -87,15 +89,39 @@ export async function POST(request: Request) {
           break;
         }
 
+        if (
+          !order.stripePaymentIntentId ||
+          order.stripePaymentIntentId !==
+            paymentIntent.id
+        ) {
+          console.error(
+            `PaymentIntent mismatch for order ${orderId}. Expected ${order.stripePaymentIntentId ?? "none"}, received ${paymentIntent.id}.`
+          );
+
+          break;
+        }
+
+        if (
+          paymentIntent.currency !==
+          STRIPE_ORDER_CURRENCY
+        ) {
+          console.error(
+            `Payment currency mismatch for order ${orderId}. Expected ${STRIPE_ORDER_CURRENCY}, got ${paymentIntent.currency}.`
+          );
+
+          break;
+        }
+
         const expectedAmount = Math.round(
           order.total * 100
         );
 
         if (
-          paymentIntent.amount !== expectedAmount
+          paymentIntent.amount_received !==
+          expectedAmount
         ) {
           console.error(
-            `Payment amount mismatch for order ${orderId}.`
+            `Payment amount mismatch for order ${orderId}. Expected ${expectedAmount}, got ${paymentIntent.amount_received}.`
           );
 
           break;
@@ -105,8 +131,28 @@ export async function POST(request: Request) {
           break;
         }
 
+        if (
+          order.orderStatus ===
+          "cancelled"
+        ) {
+          order.paymentStatus = "paid";
+          await order.save();
+
+          console.error(
+            `Cancelled order ${orderId} received successful payment ${paymentIntent.id}. Order remains cancelled for manual investigation.`
+          );
+
+          break;
+        }
+
         order.paymentStatus = "paid";
-        order.orderStatus = "confirmed";
+
+        if (
+          order.orderStatus ===
+          "pending"
+        ) {
+          order.orderStatus = "confirmed";
+        }
 
         await order.save();
 
@@ -151,6 +197,26 @@ export async function POST(request: Request) {
         if (!order) {
           console.error(
             `Order ${orderId} not found.`
+          );
+
+          break;
+        }
+
+        if (
+          !order.stripePaymentIntentId ||
+          order.stripePaymentIntentId !==
+            paymentIntent.id
+        ) {
+          console.error(
+            `Failed PaymentIntent mismatch for order ${orderId}. Expected ${order.stripePaymentIntentId ?? "none"}, received ${paymentIntent.id}.`
+          );
+
+          break;
+        }
+
+        if (order.paymentStatus === "paid") {
+          console.log(
+            `Ignoring failed payment event for already-paid order ${orderId}.`
           );
 
           break;

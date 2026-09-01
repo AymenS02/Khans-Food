@@ -24,19 +24,6 @@ if (
   );
 }
 
-console.log("CLOUDINARY CONFIG:", {
-  cloudName,
-  apiKey:
-    apiKey
-      ? `${apiKey.slice(0, 4)}...`
-      : "MISSING",
-
-  apiSecret:
-    apiSecret
-      ? "LOADED"
-      : "MISSING",
-});
-
 cloudinary.config({
   cloud_name:
     cloudName,

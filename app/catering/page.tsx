@@ -145,7 +145,7 @@ export default async function CateringPage() {
                     </p>
 
                     <Link
-                      href={`/catering/package/${cateringPackage.slug}`}
+                      href={`/catering/${cateringPackage.slug}`}
                       className="mt-5 block rounded-xl bg-primary px-4 py-3 text-center font-semibold text-white transition hover:opacity-90"
                     >
                       View Package

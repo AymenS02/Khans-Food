@@ -662,7 +662,7 @@ export async function updateCateringPackage(
    */
 
   revalidatePath(
-    `/catering/package/${oldSlug}`
+    `/catering/${oldSlug}`
   );
 
   /*
@@ -670,7 +670,7 @@ export async function updateCateringPackage(
    */
 
   revalidatePath(
-    `/catering/package/${slug}`
+    `/catering/${slug}`
   );
 
   /*
