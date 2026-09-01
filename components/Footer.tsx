@@ -1,48 +1,61 @@
-import React from 'react'
-import Link from 'next/link'
+import Link from "next/link";
 
-const Footer = () => {
+const footerLinks = [
+  { href: "/", label: "Home" },
+  { href: "/menu", label: "Menu" },
+  { href: "/catering", label: "Catering" },
+  { href: "/contact", label: "Contact" },
+  { href: "/account", label: "Account" },
+  { href: "/faq", label: "FAQ" },
+];
 
+export default function Footer() {
   return (
-    <footer className="w-full border-t border-stone-200 bg-stone-50 px-6 py-8 text-stone-600">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        {/* Clinic info */}
-        <div className="space-y-1">
-          <p className="font-semibold text-stone-800">Limeworth X-Ray & Ultrasound</p>
-          <p className="text-sm">123 Limeworth Ave, Toronto, ON</p>
-          <p className="text-sm">(416) 555-0134</p>
-          <p className="text-sm">info@limeworthimaging.ca</p>
+    <footer className="mt-16 border-t border-black/10 bg-foreground text-white">
+      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.3fr_1fr_1fr] lg:px-12">
+        <div>
+          <p className="text-2xl font-bold">Khans Food</p>
+          <p className="mt-3 max-w-md text-sm leading-6 text-white/75">
+            Fresh pickup meals and dependable catering packages for offices, events, and family gatherings.
+          </p>
+          <Link
+            href="/catering"
+            className="mt-5 inline-block rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Plan Catering
+          </Link>
         </div>
 
-        {/* Business hours */}
-        <div className="space-y-1 text-sm">
-          <p className="font-semibold text-stone-800">Hours</p>
-          <div className="grid grid-cols-[auto_auto] gap-x-4">
-            <span>Mon – Fri</span>
-            <span className="text-right font-mono">8:00 AM – 6:00 PM</span>
-            <span>Saturday</span>
-            <span className="text-right font-mono">9:00 AM – 2:00 PM</span>
-            <span>Sunday</span>
-            <span className="text-right font-mono">Closed</span>
-          </div>
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-white/70">Navigate</h2>
+          <ul className="mt-4 space-y-2 text-sm">
+            {footerLinks.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="text-white/85 transition hover:text-white">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-white/70">Need help?</h2>
+          <p className="mt-4 text-sm leading-6 text-white/75">
+            Questions about pickup times, catering requests, or payments?
+          </p>
+          <Link href="/faq" className="mt-4 inline-block text-sm font-semibold text-primary hover:underline">
+            Read FAQ →
+          </Link>
+          <Link href="/contact" className="mt-2 block text-sm font-semibold text-primary hover:underline">
+            Contact us →
+          </Link>
         </div>
       </div>
 
-      {/* Bottom bar */}
-      <div className="mx-auto mt-8 flex max-w-5xl items-center justify-between border-t border-stone-200 pt-4 text-xs text-stone-400">
-        <span>&copy; {new Date().getFullYear()} Limeworth X-Ray & Ultrasound. All rights reserved.</span>
-
-        {/* Secret admin access — a small unlabeled dot, easy to miss */}
-        <Link href="/admin">
-          <button
-            type="button"
-            aria-label=""
-            className="h-2 w-2 rounded-full bg-stone-200 transition-colors hover:bg-teal-500"
-          />
-        </Link>
+      <div className="border-t border-white/10 px-5 py-4 text-center text-xs text-white/60 sm:px-8 lg:px-12">
+        © {new Date().getFullYear()} Khans Food. All rights reserved.
       </div>
     </footer>
-  )
+  );
 }
-
-export default Footer
