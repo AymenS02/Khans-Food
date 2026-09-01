@@ -64,8 +64,8 @@ export default function CateringPackageCreateForm({
   ] =
     useActionState(
       async (
-        previousState,
-        formData
+        previousState: CreateCateringPackageActionState,
+        formData: FormData
       ) => {
         const nextState =
           await createCateringPackage(
