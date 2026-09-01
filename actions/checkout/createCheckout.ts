@@ -242,6 +242,40 @@ export async function createCheckout(
     }
 
     /*
+     * Cancelled orders are terminal.
+     *
+     * Never allow a cancelled order to
+     * continue into payment creation/reuse.
+     */
+    if (
+      order.orderStatus ===
+      "cancelled"
+    ) {
+      return {
+        success: false,
+        error:
+          "This order has been cancelled and can no longer be paid.",
+      };
+    }
+
+    /*
+     * Paid orders are terminal for checkout.
+     *
+     * Do not create or replace PaymentIntents
+     * after payment has already succeeded.
+     */
+    if (
+      order.paymentStatus ===
+      "paid"
+    ) {
+      return {
+        success: false,
+        error:
+          "This order is already paid.",
+      };
+    }
+
+    /*
      * If Stripe already created a
      * PaymentIntent for this Order,
      * retrieve it.
@@ -279,6 +313,8 @@ export async function createCheckout(
             metadata: {
               orderId:
                 order._id.toString(),
+              orderType:
+                "regular",
             },
 
             receipt_email:
