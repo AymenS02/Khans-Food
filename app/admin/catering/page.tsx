@@ -87,7 +87,7 @@ export default async function AdminCateringPage() {
                           }
                         </p>
 
-                        <p className="mt-1 text-sm text-foreground/50">
+                        <p className="mt-1 break-all text-sm text-foreground/50">
                           {
                             request.email
                           }
@@ -166,7 +166,7 @@ export default async function AdminCateringPage() {
 
                       {/* Status */}
                       <td className="px-5 py-5">
-                        <span className="rounded-full bg-background px-3 py-1 text-sm font-semibold capitalize">
+                        <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold capitalize ${statusClassName(request.status)}`}>
                           {
                             request.status
                           }
@@ -192,4 +192,16 @@ export default async function AdminCateringPage() {
       )}
     </main>
   );
+}
+
+function statusClassName(status: string) {
+  if (status === "approved") {
+    return "bg-secondary/10 text-foreground";
+  }
+
+  if (status === "rejected" || status === "cancelled") {
+    return "bg-accent/10 text-accent";
+  }
+
+  return "bg-background text-foreground/75";
 }

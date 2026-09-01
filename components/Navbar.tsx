@@ -59,10 +59,14 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
 
   return (
     <div className="fixed top-0 left-1/2 z-50 w-full -translate-x-1/2">
-      <div className="relative mx-auto w-[92%] shadow-2xl md:w-fit">
-        <nav className="rounded-b-[18px] bg-foreground px-5 text-white transition-all duration-300">
+      <div className="relative mx-auto w-[94%] shadow-2xl md:w-fit">
+        <nav className="rounded-b-[18px] bg-foreground px-4 text-white transition-all duration-300 sm:px-5">
           <div className="flex h-16 items-center justify-between gap-6 sm:gap-16">
-            <Link href="/" className="flex items-center gap-3" onClick={closeMenu}>
+            <Link
+              href="/"
+              className="flex items-center gap-3 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+              onClick={closeMenu}
+            >
               <Image src="/logo.png" alt="Khans Food" width={34} height={34} className="rounded-lg" />
               <span className="hidden text-sm font-semibold uppercase tracking-[0.15em] sm:inline">
                 Khans Food
@@ -70,19 +74,23 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
             </Link>
 
             <div className="hidden items-center gap-7 text-base font-semibold md:flex">
-              <Link href="/">Home</Link>
-              <Link href="/menu">Menu</Link>
-              <Link href="/catering">Catering</Link>
-              <Link href="/faq">FAQ</Link>
-              <Link href="/contact">Contact</Link>
+              <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/">Home</Link>
+              <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/menu">Menu</Link>
+              <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/catering">Catering</Link>
+              <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/faq">FAQ</Link>
+              <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/contact">Contact</Link>
 
-              {!isLoggedIn && <Link href="/login">Login</Link>}
-              {!isLoggedIn && <Link href="/register">Create Account</Link>}
-              {isLoggedIn && <Link href="/account">Account</Link>}
-              {isAdmin && <Link href="/admin">Admin</Link>}
+              {!isLoggedIn && <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/login">Login</Link>}
+              {!isLoggedIn && <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/register">Create Account</Link>}
+              {isLoggedIn && <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/account">Account</Link>}
+              {isAdmin && <Link className="rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70" href="/admin">Admin</Link>}
 
               {isLoggedIn && (
-                <button type="button" onClick={handleSignOut} className="cursor-pointer">
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="cursor-pointer rounded-sm outline-none transition hover:text-primary focus-visible:ring-2 focus-visible:ring-white/70"
+                >
                   Logout
                 </button>
               )}
@@ -91,7 +99,7 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
             <div className="flex items-center gap-4">
               <Link
                 href="/cart"
-                className={`relative inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 font-semibold text-white transition ${
+                className={`relative inline-flex min-h-10 items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 font-semibold text-white outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground ${
                   isCartAnimating ? "scale-110" : "scale-100"
                 }`}
                 aria-label={`Cart, ${totalItems} item${totalItems === 1 ? "" : "s"}`}
@@ -126,11 +134,14 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
                 aria-expanded={isMenuOpen}
                 aria-controls="mobile-navigation"
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                className="flex h-8 w-6 flex-col justify-center gap-[5px] md:hidden"
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70 md:hidden"
               >
-                <span className="h-0.5 rounded-full bg-primary" />
-                <span className="h-0.5 rounded-full bg-primary" />
-                <span className="h-0.5 rounded-full bg-primary" />
+                <span className="sr-only">{isMenuOpen ? "Close menu" : "Open menu"}</span>
+                <span className="flex w-5 flex-col gap-[4px]">
+                  <span className="h-0.5 rounded-full bg-primary" />
+                  <span className="h-0.5 rounded-full bg-primary" />
+                  <span className="h-0.5 rounded-full bg-primary" />
+                </span>
               </button>
             </div>
           </div>
@@ -141,21 +152,25 @@ export default function Navbar({ isLoggedIn, isAdmin }: NavbarProps) {
               isMenuOpen ? "max-h-[520px] opacity-100" : "max-h-0 opacity-0"
             }`}
           >
-            <div className="flex flex-col gap-4 py-6 pl-2 text-lg font-semibold">
-              <Link href="/" onClick={closeMenu}>Home</Link>
-              <Link href="/menu" onClick={closeMenu}>Menu</Link>
-              <Link href="/catering" onClick={closeMenu}>Catering</Link>
-              <Link href="/faq" onClick={closeMenu}>FAQ</Link>
-              <Link href="/contact" onClick={closeMenu}>Contact</Link>
-              <Link href="/cart" onClick={closeMenu}>Cart ({totalItems})</Link>
+            <div className="flex flex-col gap-2 py-5 text-base font-semibold sm:text-lg">
+              <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/" onClick={closeMenu}>Home</Link>
+              <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/menu" onClick={closeMenu}>Menu</Link>
+              <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/catering" onClick={closeMenu}>Catering</Link>
+              <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/faq" onClick={closeMenu}>FAQ</Link>
+              <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/contact" onClick={closeMenu}>Contact</Link>
+              <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/cart" onClick={closeMenu}>Cart ({totalItems})</Link>
 
-              {!isLoggedIn && <Link href="/login" onClick={closeMenu}>Login</Link>}
-              {!isLoggedIn && <Link href="/register" onClick={closeMenu}>Create Account</Link>}
-              {isLoggedIn && <Link href="/account" onClick={closeMenu}>Account</Link>}
-              {isAdmin && <Link href="/admin" onClick={closeMenu}>Admin</Link>}
+              {!isLoggedIn && <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/login" onClick={closeMenu}>Login</Link>}
+              {!isLoggedIn && <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/register" onClick={closeMenu}>Create Account</Link>}
+              {isLoggedIn && <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/account" onClick={closeMenu}>Account</Link>}
+              {isAdmin && <Link className="rounded-lg px-3 py-2 outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70" href="/admin" onClick={closeMenu}>Admin</Link>}
 
               {isLoggedIn && (
-                <button type="button" onClick={handleSignOut} className="w-fit text-left">
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="w-fit rounded-lg px-3 py-2 text-left outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70"
+                >
                   Logout
                 </button>
               )}
