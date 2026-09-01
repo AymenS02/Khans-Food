@@ -53,7 +53,7 @@ const adminFunctions = [
 
 export default function AdminDashboardPage() {
   return (
-    <main className="p-6 sm:p-8">
+    <main className="mx-auto max-w-7xl px-5 py-12">
       {/* Header */}
 
       <div>

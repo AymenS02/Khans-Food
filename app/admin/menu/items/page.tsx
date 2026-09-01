@@ -17,7 +17,7 @@ export default async function AdminMenuItemsPage() {
     ]);
 
   return (
-    <main className="space-y-8">
+    <main className="mx-auto max-w-7xl space-y-8 px-5 py-12">
       {/* Header */}
 
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
