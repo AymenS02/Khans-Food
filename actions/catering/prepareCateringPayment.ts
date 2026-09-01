@@ -193,6 +193,41 @@ export async function prepareCateringPayment(
     }
 
     /*
+    * A cancelled PaymentIntent cannot
+    * be reused for payment.
+    */
+    if (
+      existingPaymentIntent.status ===
+      "canceled"
+    ) {
+      throw new Error(
+        "This payment session is no longer active. Please contact Khans Food."
+      );
+    }
+
+    const expectedAmount =
+      Math.round(
+        order.total * 100
+      );
+
+    if (
+      existingPaymentIntent.amount !==
+        expectedAmount ||
+      existingPaymentIntent.currency !==
+        "cad" ||
+      existingPaymentIntent.metadata.orderId !==
+        order._id.toString() ||
+      existingPaymentIntent.metadata.orderType !==
+        "catering" ||
+      existingPaymentIntent.metadata.cateringRequestId !==
+        cateringRequest._id.toString()
+    ) {
+      throw new Error(
+        "The existing payment session does not match this catering order."
+      );
+    }
+
+    /*
      * Existing unpaid PaymentIntent:
      * reuse it.
      */
@@ -270,7 +305,7 @@ export async function prepareCateringPayment(
    * 10. Continue to payment page
    * --------------------------------------------------
    */
-
+  
   redirect(
     `/account/orders/${orderId}/payment`
   );

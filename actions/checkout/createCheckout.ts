@@ -13,6 +13,9 @@ import { getBusinessHoursForDate } from "@/features/checkout/services/getBusines
 
 import type { CheckoutRequest } from "@/features/checkout/validators/checkoutRequestSchema";
 
+import { getClientIp } from "@/lib/getClientIp";
+import { checkRateLimit } from "@/lib/rateLimit";
+
 type CreateCheckoutInput =
   CheckoutRequest & {
     customerId?: string;
@@ -121,6 +124,33 @@ export async function createCheckout(
           error:
             pickupValidation.error ??
             "Invalid pickup time.",
+        };
+      }
+
+      const clientIp =
+        await getClientIp();
+
+      const rateLimit =
+        await checkRateLimit({
+          scope:
+            "regular-checkout",
+
+          identifier:
+            clientIp,
+
+          limit:
+            10,
+
+          windowMs:
+            10 * 60 * 1000,
+        });
+
+      if (!rateLimit.allowed) {
+        return {
+          success: false,
+
+          error:
+            "Too many checkout attempts. Please wait a few minutes and try again.",
         };
       }
 
