@@ -5,7 +5,7 @@ import { stripe } from "@/lib/stripe";
 import Order from "@/models/Order";
 import { connectToDatabase } from "@/lib/mongodb";
 
-import { sendRegularOrderConfirmationEmail } from "@/features/email/services/sendRegularOrderConfirmationEmail";
+import { sendPaidOrderConfirmationEmail } from "@/features/email/services/sendPaidOrderConfirmationEmail";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
         await order.save();
 
         try {
-          await sendRegularOrderConfirmationEmail(
+          await sendPaidOrderConfirmationEmail(
             orderId
           );
         } catch (error) {

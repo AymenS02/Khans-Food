@@ -8,10 +8,15 @@ import { connectToDatabase } from "@/lib/mongodb";
 import CateringItem from "@/models/CateringItem";
 import CateringRequest from "@/models/CateringRequest";
 
+import { sendCateringRequestReceivedEmail } from "@/features/email/services/sendCateringRequestReceivedEmail";
+
 import {
   customCateringRequestSchema,
   type CustomCateringRequestInput,
 } from "@/features/catering/validators/customCateringRequestSchema";
+
+import { getClientIp } from "@/lib/getClientIp";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 interface CreateCustomCateringRequestResult {
   success: boolean;
@@ -24,6 +29,12 @@ export async function createCustomCateringRequest(
   input: CustomCateringRequestInput
 ): Promise<CreateCustomCateringRequestResult> {
   try {
+    /*
+     * ==========================================
+     * 1. VALIDATE INPUT
+     * ==========================================
+     */
+
     const parsed =
       customCateringRequestSchema.safeParse(
         input
@@ -40,6 +51,33 @@ export async function createCustomCateringRequest(
       };
     }
 
+    const clientIp =
+      await getClientIp();
+
+    const rateLimit =
+      await checkRateLimit({
+        scope:
+          "catering-request",
+
+        identifier:
+          clientIp,
+
+        limit:
+          5,
+
+        windowMs:
+          10 * 60 * 1000,
+      });
+
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+
+        error:
+          "Too many catering requests. Please try again in a few minutes.",
+      };
+    }
+
     const {
       firstName,
       lastName,
@@ -52,8 +90,11 @@ export async function createCustomCateringRequest(
     } = parsed.data;
 
     /*
-     * Reject duplicate item IDs.
+     * ==========================================
+     * 2. REJECT DUPLICATE ITEM IDS
+     * ==========================================
      */
+
     const uniqueItemIds =
       new Set(
         items.map(
@@ -68,14 +109,18 @@ export async function createCustomCateringRequest(
     ) {
       return {
         success: false,
+
         error:
           "Duplicate catering items are not allowed.",
       };
     }
 
     /*
-     * Validate the event date.
+     * ==========================================
+     * 3. VALIDATE EVENT DATE
+     * ==========================================
      */
+
     const requestedDate =
       new Date(
         `${eventDate}T00:00:00.000Z`
@@ -88,7 +133,9 @@ export async function createCustomCateringRequest(
     ) {
       return {
         success: false,
-        error: "Invalid event date.",
+
+        error:
+          "Invalid event date.",
       };
     }
 
@@ -110,16 +157,29 @@ export async function createCustomCateringRequest(
     ) {
       return {
         success: false,
+
         error:
           "Event date cannot be in the past.",
       };
     }
 
+    /*
+     * ==========================================
+     * 4. DATABASE
+     * ==========================================
+     */
+
     await connectToDatabase();
 
     /*
-     * Load the REAL catering items.
+     * ==========================================
+     * 5. LOAD REAL CATERING ITEMS
+     * ==========================================
+     *
+     * Never trust item names, prices, or
+     * availability from the browser.
      */
+
     const cateringItemIds =
       items.map(
         (item) =>
@@ -131,16 +191,19 @@ export async function createCustomCateringRequest(
     const databaseItems =
       await CateringItem.find({
         _id: {
-          $in: cateringItemIds,
+          $in:
+            cateringItemIds,
         },
 
-        available: true,
+        available:
+          true,
       }).lean();
 
     /*
-     * If one of the IDs is missing,
-     * deleted, or unavailable, stop.
+     * If one item disappeared or became
+     * unavailable, reject the request.
      */
+
     if (
       databaseItems.length !==
       items.length
@@ -153,84 +216,101 @@ export async function createCustomCateringRequest(
       };
     }
 
-    let estimatedSubtotal = 0;
+    /*
+     * ==========================================
+     * 6. BUILD SNAPSHOTS + ESTIMATE
+     * ==========================================
+     */
+
+    let estimatedSubtotal =
+      0;
 
     const customItems =
-      items.map((selected) => {
-        const cateringItem =
-          databaseItems.find(
-            (item) =>
-              item._id.toString() ===
-              selected.cateringItemId
-          );
+      items.map(
+        (selected) => {
+          const cateringItem =
+            databaseItems.find(
+              (item) =>
+                item._id.toString() ===
+                selected.cateringItemId
+            );
 
-        if (!cateringItem) {
-          throw new Error(
-            "Catering item not found."
-          );
+          if (!cateringItem) {
+            throw new Error(
+              "Catering item not found."
+            );
+          }
+
+          const minimumQuantity =
+            cateringItem.minimumQuantity ??
+            1;
+
+          if (
+            selected.quantity <
+            minimumQuantity
+          ) {
+            throw new Error(
+              `${cateringItem.name} requires a minimum quantity of ${minimumQuantity}.`
+            );
+          }
+
+          /*
+           * Calculate using DATABASE price.
+           */
+
+          if (
+            cateringItem.pricingType ===
+            "per_person"
+          ) {
+            estimatedSubtotal +=
+              cateringItem.price *
+              guestCount *
+              selected.quantity;
+          } else {
+            estimatedSubtotal +=
+              cateringItem.price *
+              selected.quantity;
+          }
+
+          /*
+           * Snapshot the current item
+           * information onto the request.
+           */
+
+          return {
+            cateringItem:
+              cateringItem._id,
+
+            name:
+              cateringItem.name,
+
+            price:
+              cateringItem.price,
+
+            pricingType:
+              cateringItem.pricingType,
+
+            quantity:
+              selected.quantity,
+          };
         }
-
-        const minimumQuantity =
-          cateringItem.minimumQuantity ??
-          1;
-
-        if (
-          selected.quantity <
-          minimumQuantity
-        ) {
-          throw new Error(
-            `${cateringItem.name} requires a minimum quantity of ${minimumQuantity}.`
-          );
-        }
-
-        /*
-         * Calculate using DATABASE price,
-         * never browser price.
-         */
-        if (
-          cateringItem.pricingType ===
-          "per_person"
-        ) {
-          estimatedSubtotal +=
-            cateringItem.price *
-            guestCount *
-            selected.quantity;
-        } else {
-          estimatedSubtotal +=
-            cateringItem.price *
-            selected.quantity;
-        }
-
-        /*
-         * Snapshot the item information.
-         */
-        return {
-          cateringItem:
-            cateringItem._id,
-
-          name:
-            cateringItem.name,
-
-          price:
-            cateringItem.price,
-
-          pricingType:
-            cateringItem.pricingType,
-
-          quantity:
-            selected.quantity,
-        };
-      });
+      );
 
     estimatedSubtotal =
       Number(
-        estimatedSubtotal.toFixed(2)
+        estimatedSubtotal.toFixed(
+          2
+        )
       );
 
     /*
-     * Link to logged-in customer
-     * when possible.
+     * ==========================================
+     * 7. LINK AUTHENTICATED CUSTOMER
+     * ==========================================
+     *
+     * Guests are still allowed.
      */
+
     const session =
       await auth();
 
@@ -243,6 +323,12 @@ export async function createCustomCateringRequest(
             session.user.id
           )
         : undefined;
+
+    /*
+     * ==========================================
+     * 8. CREATE CATERING REQUEST
+     * ==========================================
+     */
 
     const cateringRequest =
       await CateringRequest.create({
@@ -268,6 +354,49 @@ export async function createCustomCateringRequest(
         status:
           "submitted",
       });
+
+    /*
+     * ==========================================
+     * 9. SEND CONFIRMATION EMAIL
+     * ==========================================
+     *
+     * The catering request already exists.
+     *
+     * Email failure must NOT cause this action
+     * to report the request as failed.
+     */
+
+    try {
+      await sendCateringRequestReceivedEmail({
+        requestId:
+          cateringRequest._id.toString(),
+
+        recipientEmail:
+          email,
+
+        customerName:
+          firstName,
+
+        eventDate:
+          requestedDate,
+
+        guestCount,
+
+        selectionType:
+          "custom",
+      });
+    } catch (emailError) {
+      console.error(
+        "Catering request was created, but confirmation email failed:",
+        emailError
+      );
+    }
+
+    /*
+     * ==========================================
+     * 10. SUCCESS
+     * ==========================================
+     */
 
     return {
       success: true,

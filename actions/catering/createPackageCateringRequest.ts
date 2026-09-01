@@ -8,10 +8,15 @@ import { connectToDatabase } from "@/lib/mongodb";
 import CateringPackage from "@/models/CateringPackage";
 import CateringRequest from "@/models/CateringRequest";
 
+import { sendCateringRequestReceivedEmail } from "@/features/email/services/sendCateringRequestReceivedEmail";
+
 import {
   packageCateringRequestSchema,
   type PackageCateringRequestInput,
 } from "@/features/catering/validators/packageCateringRequestSchema";
+
+import { getClientIp } from "@/lib/getClientIp";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 interface CreatePackageCateringRequestResult {
   success: boolean;
@@ -40,6 +45,33 @@ export async function createPackageCateringRequest(
           parsed.error.issues[0]
             ?.message ??
           "Invalid catering request.",
+      };
+    }
+
+    const clientIp =
+      await getClientIp();
+
+    const rateLimit =
+      await checkRateLimit({
+        scope:
+          "catering-request",
+
+        identifier:
+          clientIp,
+
+        limit:
+          5,
+
+        windowMs:
+          10 * 60 * 1000,
+      });
+
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+
+        error:
+          "Too many catering requests. Please try again in a few minutes.",
       };
     }
 
@@ -174,6 +206,7 @@ export async function createPackageCateringRequest(
      *
      * Those come from MongoDB.
      */
+    
     const cateringRequest =
       await CateringRequest.create({
         customer,
@@ -213,12 +246,46 @@ export async function createPackageCateringRequest(
           "submitted",
       });
 
+    /*
+    * The catering request has already
+    * been safely created.
+    *
+    * Email failure must NOT make the
+    * customer think their request failed.
+    */
+    try {
+      await sendCateringRequestReceivedEmail({
+        requestId:
+          cateringRequest._id.toString(),
+
+        recipientEmail:
+          email,
+
+        customerName:
+          firstName,
+
+        eventDate:
+          requestedDate,
+
+        guestCount,
+
+        selectionType:
+          "package",
+      });
+    } catch (error) {
+      console.error(
+        "Catering request was created, but confirmation email failed:",
+        error
+      );
+    }
+
     return {
       success: true,
 
       requestId:
         cateringRequest._id.toString(),
     };
+    
   } catch (error) {
     console.error(
       "Create catering request error:",

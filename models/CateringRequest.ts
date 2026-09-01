@@ -70,6 +70,10 @@ export interface ICateringRequest
 
   order?: Types.ObjectId;
 
+  requestReceivedEmailSentAt?: Date;
+
+  approvalEmailSentAt?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -254,6 +258,15 @@ const CateringRequestSchema =
         type: Schema.Types.ObjectId,
         ref: "Order",
       },
+
+      requestReceivedEmailSentAt: {
+        type: Date,
+      },
+
+      approvalEmailSentAt: {
+        type: Date,
+      },
+
     },
     {
       timestamps: true,

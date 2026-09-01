@@ -10,6 +10,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import CateringRequest from "@/models/CateringRequest";
 import Order from "@/models/Order";
 
+import { sendCateringApprovalEmail } from "@/features/email/services/sendCateringApprovalEmail";
+
 export async function approveCateringRequest(
   formData: FormData
 ) {
@@ -52,10 +54,32 @@ export async function approveCateringRequest(
    * Make an already-completed approval
    * safe to retry.
    */
+  
   if (
     request.status === "approved" &&
     request.order
   ) {
+    /*
+    * Approval itself already completed.
+    *
+    * Still retry the email in case the
+    * previous email attempt failed.
+    *
+    * sendCateringApprovalEmail() is
+    * idempotent, so if it was already sent,
+    * it simply returns.
+    */
+    try {
+      await sendCateringApprovalEmail(
+        request._id.toString()
+      );
+    } catch (emailError) {
+      console.error(
+        "Catering request was already approved, but approval email failed:",
+        emailError
+      );
+    }
+
     revalidatePath(
       "/admin/catering"
     );
@@ -238,6 +262,17 @@ export async function approveCateringRequest(
     order._id;
 
   await request.save();
+  
+  try {
+    await sendCateringApprovalEmail(
+      request._id.toString()
+    );
+  } catch (emailError) {
+    console.error(
+      "Catering request was approved, but approval email failed:",
+      emailError
+    );
+  }
 
   revalidatePath(
     "/admin/catering"
