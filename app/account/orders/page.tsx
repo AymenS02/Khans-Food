@@ -51,17 +51,17 @@ export default async function OrdersPage() {
                     Order
                   </p>
 
-                  <h2 className="mt-1 font-mono font-semibold text-foreground">
+                  <h2 className="mt-1 break-all font-mono font-semibold text-foreground">
                     {order.id}
                   </h2>
                 </div>
 
-                <div className="flex gap-2">
-                  <span className="rounded-full bg-background px-3 py-1 text-sm font-semibold capitalize">
+                <div className="flex flex-wrap gap-2">
+                  <span className={`rounded-full px-3 py-1 text-sm font-semibold capitalize ${orderStatusClassName(order.orderStatus)}`}>
                     Order Status: {order.orderStatus}
                   </span>
 
-                  <span className="rounded-full bg-background px-3 py-1 text-sm font-semibold capitalize">
+                  <span className={`rounded-full px-3 py-1 text-sm font-semibold capitalize ${paymentStatusClassName(order.paymentStatus)}`}>
                     Payment Status: {order.paymentStatus}
                   </span>
                 </div>
@@ -162,4 +162,28 @@ function formatDateOnly(
       timeZone: "UTC",
     }
   ).format(new Date(date));
+}
+
+function orderStatusClassName(status: string) {
+  if (status === "cancelled") {
+    return "bg-accent/10 text-accent";
+  }
+
+  if (status === "completed" || status === "ready") {
+    return "bg-secondary/10 text-foreground";
+  }
+
+  return "bg-background text-foreground/75";
+}
+
+function paymentStatusClassName(status: string) {
+  if (status === "failed" || status === "refunded") {
+    return "bg-accent/10 text-accent";
+  }
+
+  if (status === "paid") {
+    return "bg-secondary/10 text-foreground";
+  }
+
+  return "bg-background text-foreground/75";
 }

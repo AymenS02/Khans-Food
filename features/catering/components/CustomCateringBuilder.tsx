@@ -244,7 +244,7 @@ export default function CustomCateringBuilder({
                       }
                       className="mt-5 w-full rounded-xl bg-primary px-4 py-3 font-semibold text-white transition hover:opacity-90"
                     >
-                      Add
+                      Add to Request
                     </button>
                   ) : (
                     <div className="mt-5">
@@ -403,7 +403,7 @@ export default function CustomCateringBuilder({
           }
           className="mt-6 w-full rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Continue
+          Continue to Contact Details
         </button>
       </aside>
     </div>

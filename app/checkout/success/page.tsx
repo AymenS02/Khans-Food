@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { getCheckoutSuccessOrder } from "@/actions/checkout/getCheckoutSuccessOrder";
 
@@ -229,9 +230,26 @@ export default async function CheckoutSuccessPage({
           </div>
         </section>
 
-        {/* ==========================================
-            ACTIONS
-        ========================================== */}
+        <section className="mt-6 border-t border-black/10 pt-6">
+          <h2 className="text-lg font-bold text-foreground">What&apos;s next?</h2>
+          <p className="mt-2 text-sm leading-6 text-foreground/60">
+            You can track this order from your account when signed in, or continue browsing the menu.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/account/orders"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              View My Orders
+            </Link>
+            <Link
+              href="/menu"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-background"
+            >
+              Browse Menu
+            </Link>
+          </div>
+        </section>
       </div>
     </main>
   );

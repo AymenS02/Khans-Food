@@ -31,7 +31,7 @@ export default async function RootLayout({
           isAdmin={isAdmin}
         />
 
-        <main className="flex-1 mt-48">{children}</main>
+        <main className="mt-24 flex-1 sm:mt-28">{children}</main>
 
         <Footer />
       </body>

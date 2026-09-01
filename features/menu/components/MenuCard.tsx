@@ -41,7 +41,7 @@ export default function MenuCard({ item }: MenuCardProps) {
   };
 
   return (
-    <article className="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm">
       <div className="relative aspect-[4/3] overflow-hidden bg-black/5">
         {item.image ? (
           <Image
@@ -62,23 +62,24 @@ export default function MenuCard({ item }: MenuCardProps) {
         )}
       </div>
 
-      <div className="p-5">
+      <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-4">
           <h2 className="text-xl font-bold text-foreground">{item.name}</h2>
 
           <span className="shrink-0 font-semibold text-primary">${item.price.toFixed(2)}</span>
         </div>
 
-        {item.description && <p className="mt-2 text-sm leading-6 text-foreground/60">{item.description}</p>}
+        {item.description && <p className="mt-2 line-clamp-3 text-sm leading-6 text-foreground/60">{item.description}</p>}
 
         <button
           type="button"
           onClick={handleAddToCart}
-          className={`mt-5 w-full rounded-xl px-4 py-3 font-semibold text-white transition ${
+          className={`mt-5 min-h-11 w-full rounded-xl px-4 py-3 font-semibold text-white outline-none transition focus-visible:ring-2 focus-visible:ring-primary/50 ${
             isAdded
               ? "bg-secondary motion-safe:scale-[1.01]"
               : "bg-primary hover:opacity-90"
           }`}
+          aria-live="polite"
         >
           {isAdded ? "Added" : "Add to Cart"}
         </button>

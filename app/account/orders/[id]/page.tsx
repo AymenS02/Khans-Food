@@ -43,11 +43,11 @@ export default async function OrderDetailsPage({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full bg-background px-3 py-1 text-sm font-semibold capitalize">
+            <span className={`rounded-full px-3 py-1 text-sm font-semibold capitalize ${orderStatusClassName(order.orderStatus)}`}>
               Order Status: {order.orderStatus}
             </span>
 
-            <span className="rounded-full bg-background px-3 py-1 text-sm font-semibold capitalize">
+            <span className={`rounded-full px-3 py-1 text-sm font-semibold capitalize ${paymentStatusClassName(order.paymentStatus)}`}>
               Payment Status: {order.paymentStatus}
             </span>
           </div>
@@ -197,7 +197,7 @@ export default async function OrderDetailsPage({
 
                   <button
                     type="submit"
-                    className="w-full rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:opacity-90"
+                    className="min-h-11 w-full rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:opacity-90"
                   >
                     Pay Catering Order
                   </button>
@@ -237,4 +237,28 @@ function formatDateOnly(
       timeZone: "UTC",
     }
   ).format(new Date(date));
+}
+
+function orderStatusClassName(status: string) {
+  if (status === "cancelled") {
+    return "bg-accent/10 text-accent";
+  }
+
+  if (status === "completed" || status === "ready") {
+    return "bg-secondary/10 text-foreground";
+  }
+
+  return "bg-background text-foreground/75";
+}
+
+function paymentStatusClassName(status: string) {
+  if (status === "failed" || status === "refunded") {
+    return "bg-accent/10 text-accent";
+  }
+
+  if (status === "paid") {
+    return "bg-secondary/10 text-foreground";
+  }
+
+  return "bg-background text-foreground/75";
 }

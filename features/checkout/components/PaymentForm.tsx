@@ -65,10 +65,12 @@ export default function PaymentForm({
       onSubmit={handleSubmit}
       className="space-y-6"
     >
-      <PaymentElement />
+      <div className="rounded-xl border border-black/10 bg-white p-4 sm:p-5">
+        <PaymentElement />
+      </div>
 
       {error && (
-        <p className="text-sm text-red-500">
+        <p role="alert" className="rounded-xl border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
           {error}
         </p>
       )}
@@ -76,11 +78,11 @@ export default function PaymentForm({
       <button
         type="submit"
         disabled={!stripe || !elements || isSubmitting}
-        className="w-full rounded-lg bg-foreground px-6 py-3 font-semibold text-white disabled:opacity-50"
+        className="w-full rounded-xl bg-primary px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isSubmitting
-          ? "Processing..."
-          : "Pay now"}
+          ? "Processing Payment..."
+          : "Pay Securely"}
       </button>
     </form>
   );

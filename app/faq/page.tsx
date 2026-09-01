@@ -82,9 +82,11 @@ export default function FaqPage() {
       <section className="mt-10 space-y-4">
         {faqs.map((item) => (
           <details key={item.question} className="group rounded-2xl bg-white p-5 shadow-sm" name="faq">
-            <summary className="cursor-pointer list-none pr-8 text-lg font-semibold text-foreground">
+            <summary className="flex cursor-pointer list-none items-start justify-between gap-4 rounded-lg text-left text-lg font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
               <span>{item.question}</span>
-              <span className="float-right text-primary transition group-open:rotate-45">+</span>
+              <span className="mt-0.5 shrink-0 text-primary transition group-open:rotate-45" aria-hidden>
+                +
+              </span>
             </summary>
             <p className="mt-3 text-sm leading-7 text-foreground/70">{item.answer}</p>
           </details>

@@ -117,18 +117,13 @@ export default function AdminDashboardPage() {
         </div>
       </section>
 
-      {/* Analytics */}
-
-      <section className="mt-12 rounded-2xl border border-dashed border-black/10 bg-white p-6">
+      <section className="mt-12 rounded-2xl border border-black/10 bg-white p-6">
         <h2 className="text-xl font-bold text-foreground">
-          Analytics
+          Daily Operations
         </h2>
 
-        <p className="mt-2 text-sm text-foreground/50">
-          Coming soon — revenue, order
-          volume, popular items, catering
-          performance, and customer
-          insights.
+        <p className="mt-2 text-sm text-foreground/60">
+          Use the sections above to manage today&apos;s orders, update menu availability, review catering requests, and keep business settings up to date.
         </p>
       </section>
     </main>
