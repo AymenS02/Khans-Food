@@ -123,9 +123,6 @@ export default function PaymentPage() {
           }
         >
           <PaymentForm
-            orderId={
-              paymentData.orderId
-            }
             returnUrl={
               returnUrl
             }

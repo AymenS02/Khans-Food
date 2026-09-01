@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useActionState } from "react";
 
 import {
@@ -312,9 +314,11 @@ export default function CateringItemRowActions({
 
                 {item.image ? (
                   <div className="mt-3">
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
+                      width={176}
+                      height={128}
                       className="h-32 w-44 rounded-lg object-cover"
                     />
 
