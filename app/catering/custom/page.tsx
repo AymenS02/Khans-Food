@@ -9,27 +9,26 @@ export default async function CustomCateringPage() {
     await getPublicCateringItems();
 
   return (
-    <main className="mx-auto max-w-7xl px-5 py-12">
+    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <Link
         href="/catering"
-        className="text-sm font-semibold text-primary hover:underline"
+        className="inline-flex min-h-10 items-center rounded-lg px-2 text-sm font-semibold text-primary outline-none transition hover:underline focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         ← Back to Catering
       </Link>
 
-      <div className="mt-8">
+      <div className="mt-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
           Custom Catering
         </p>
 
-        <h1 className="mt-2 text-4xl font-bold text-foreground">
-          Build Your Catering
+        <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">
+          Build Your Catering Request
         </h1>
 
-        <p className="mt-4 max-w-2xl text-foreground/60">
-          Select the items you would like
-          for your event and customize the
-          quantities.
+        <p className="mt-4 max-w-3xl text-base leading-7 text-foreground/60 sm:text-lg">
+          Choose your food, set quantities, then provide event and contact details.
+          Final pricing is confirmed after review.
         </p>
       </div>
 

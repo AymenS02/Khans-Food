@@ -6,6 +6,7 @@ export interface MenuItem {
   price: number;
   image?: string;
   categoryId: string;
+  categoryName?: string;
   available: boolean;
   displayOrder: number;
 }
