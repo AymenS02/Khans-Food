@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { useCartStore } from "@/stores/cartStore";
 
 import type { MenuItem } from "../types/menu";
@@ -14,6 +15,9 @@ interface MenuCardProps {
 export default function MenuCard({ item }: MenuCardProps) {
   const addItem = useCartStore((state) => state.addItem);
   const [isAdded, setIsAdded] = useState(false);
+  const prefersReducedMotion =
+    usePrefersReducedMotion();
+  const isUnavailable = !item.available;
 
   useEffect(() => {
     if (!isAdded) {
@@ -30,6 +34,10 @@ export default function MenuCard({ item }: MenuCardProps) {
   }, [isAdded]);
 
   const handleAddToCart = () => {
+    if (isUnavailable) {
+      return;
+    }
+
     addItem({
       id: item._id,
       name: item.name,
@@ -41,7 +49,7 @@ export default function MenuCard({ item }: MenuCardProps) {
   };
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm transition motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md">
       <div className="relative aspect-[4/3] overflow-hidden bg-black/5">
         {item.image ? (
           <Image
@@ -53,7 +61,7 @@ export default function MenuCard({ item }: MenuCardProps) {
               (max-width: 1024px) 50vw,
               33vw
             "
-            className="object-cover"
+            className="object-cover transition duration-300 motion-safe:group-hover:scale-[1.03]"
           />
         ) : (
           <div className="flex h-full items-center justify-center px-6 text-center">
@@ -63,26 +71,54 @@ export default function MenuCard({ item }: MenuCardProps) {
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-start justify-between gap-4">
-          <h2 className="text-xl font-bold text-foreground">{item.name}</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-lg font-bold text-foreground sm:text-xl">
+            {item.name}
+          </h2>
 
-          <span className="shrink-0 font-semibold text-primary">${item.price.toFixed(2)}</span>
+          <span className="shrink-0 text-lg font-bold text-primary">
+            ${item.price.toFixed(2)}
+          </span>
         </div>
 
-        {item.description && <p className="mt-2 line-clamp-3 text-sm leading-6 text-foreground/60">{item.description}</p>}
+        {item.description && (
+          <p className="mt-2 line-clamp-3 text-sm leading-6 text-foreground/60">
+            {item.description}
+          </p>
+        )}
+
+        {isUnavailable && (
+          <p className="mt-4 inline-flex w-fit rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+            Currently unavailable
+          </p>
+        )}
 
         <button
           type="button"
           onClick={handleAddToCart}
-          className={`mt-5 min-h-11 w-full rounded-xl px-4 py-3 font-semibold text-white outline-none transition focus-visible:ring-2 focus-visible:ring-primary/50 ${
+          disabled={isUnavailable}
+          className={`mt-5 min-h-11 w-full rounded-xl px-4 py-3 font-semibold text-white outline-none transition focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-45 ${
             isAdded
-              ? "bg-secondary motion-safe:scale-[1.01]"
+              ? "bg-secondary"
               : "bg-primary hover:opacity-90"
           }`}
-          aria-live="polite"
         >
-          {isAdded ? "Added" : "Add to Cart"}
+          {isUnavailable
+            ? "Unavailable"
+            : isAdded
+              ? "Added"
+              : "Add to Cart"}
         </button>
+        <span className="sr-only" aria-live="polite">
+          {isAdded
+            ? `${item.name} added to cart`
+            : ""}
+        </span>
+        {!prefersReducedMotion && isAdded && (
+          <span className="mt-2 text-center text-xs font-medium text-secondary">
+            Added to cart
+          </span>
+        )}
       </div>
     </article>
   );

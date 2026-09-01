@@ -1,4 +1,5 @@
 import { getPublicCateringCatalog } from "@/features/catering/services/getPublicCateringCatalog";
+import Image from "next/image";
 import Link from "next/link";
 
 export default async function CateringPage() {
@@ -9,135 +10,128 @@ export default async function CateringPage() {
     await getPublicCateringCatalog();
 
   return (
-    <main className="mx-auto max-w-7xl px-5 py-12">
-      {/* Header */}
-      <section className="max-w-3xl">
+    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
           Khans Food
         </p>
 
-        <h1 className="mt-2 text-4xl font-bold text-foreground sm:text-5xl">
-          Catering
+        <h1 className="mt-3 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+          Catering for Events of Any Size
         </h1>
 
-        <p className="mt-4 text-lg leading-8 text-foreground/60">
-          Choose one of our catering
-          packages or build a custom
-          catering request for your event.
+        <p className="mt-4 max-w-3xl text-base leading-7 text-foreground/60 sm:text-lg sm:leading-8">
+          Choose a ready-to-book package or build your own request from our catering menu.
+          We review every request before approval so your event details are confirmed accurately.
         </p>
+
+        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <Link
+            href="#catering-packages"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:opacity-90"
+          >
+            Explore Packages
+          </Link>
+          <Link
+            href="/catering/custom"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 bg-white px-5 py-3 font-semibold text-foreground transition hover:bg-background"
+          >
+            Build Custom Request
+          </Link>
+        </div>
       </section>
 
-      {/* Packages */}
-      <section className="mt-14">
+      <section className="mt-10 rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+          How Catering Works
+        </p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {["Request", "Quote & Review", "Approval", "Payment"].map((step, index) => (
+            <article
+              key={step}
+              className="rounded-2xl border border-black/10 bg-background p-4"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+                Step {index + 1}
+              </p>
+              <p className="mt-2 text-base font-semibold text-foreground">
+                {step}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="catering-packages" className="mt-12">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            Packages
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold text-foreground">
             Catering Packages
+          </p>
+          <h2 className="mt-2 text-3xl font-bold text-foreground">
+            Pre-Built Options
           </h2>
-
           <p className="mt-3 text-foreground/60">
-            Pre-built packages for an
-            easier catering experience.
+            Ready-made package combinations with transparent pricing and guest guidance.
           </p>
         </div>
 
         {packages.length === 0 ? (
-          <div className="mt-8 rounded-2xl bg-white p-8 shadow-sm">
+          <div className="mt-8 rounded-2xl border border-black/10 bg-white p-8 shadow-sm">
             <p className="text-foreground/60">
-              No catering packages are
-              currently available.
+              No catering packages are currently available.
             </p>
           </div>
         ) : (
           <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {packages.map(
-              (cateringPackage) => (
-                <article
-                  key={
-                    cateringPackage.id
-                  }
-                  className="flex flex-col rounded-2xl bg-white p-6 shadow-sm"
-                >
-                  <div>
-                    <h3 className="text-2xl font-bold text-foreground">
-                      {
-                        cateringPackage.name
-                      }
-                    </h3>
-
-                    {cateringPackage.description && (
-                      <p className="mt-3 leading-7 text-foreground/60">
-                        {
-                          cateringPackage.description
-                        }
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Guest range */}
-                  {(cateringPackage.minimumGuests ||
-                    cateringPackage.maximumGuests) && (
-                    <div className="mt-5">
-                      <p className="text-sm font-semibold text-foreground/50">
-                        Guest Count
-                      </p>
-
-                      <p className="mt-1 font-medium">
-                        {formatGuestRange(
-                          cateringPackage.minimumGuests,
-                          cateringPackage.maximumGuests
-                        )}
-                      </p>
+            {packages.map((cateringPackage) => (
+              <article
+                key={cateringPackage.id}
+                className="group flex h-full flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm transition motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-black/5">
+                  {cateringPackage.image ? (
+                    <Image
+                      src={cateringPackage.image}
+                      alt={cateringPackage.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition duration-300 motion-safe:group-hover:scale-[1.03]"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-6 text-center text-sm font-medium text-foreground/40">
+                      No package image available
                     </div>
                   )}
+                </div>
 
-                  {/* Included items */}
-                  {cateringPackage.items.length >
-                    0 && (
-                    <div className="mt-6">
-                      <p className="text-sm font-semibold text-foreground/50">
-                        Includes
-                      </p>
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="text-xl font-bold text-foreground">
+                    {cateringPackage.name}
+                  </h3>
 
-                      <ul className="mt-3 space-y-2">
-                        {cateringPackage.items.map(
-                          (
-                            item,
-                            index
-                          ) => (
-                            <li
-                              key={`${item.name}-${index}`}
-                              className="text-sm text-foreground/70"
-                            >
-                              {item.quantity >
-                                1 &&
-                                `${item.quantity} × `}
-
-                              {item.name}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Price */}
-                  <div className="mt-auto pt-8">
-                    <p className="text-sm text-foreground/50">
-                      Starting at
+                  {cateringPackage.description && (
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-foreground/60">
+                      {cateringPackage.description}
                     </p>
+                  )}
 
-                    <p className="mt-1 text-2xl font-bold text-primary">
-                      $
-                      {cateringPackage.price.toFixed(
-                        2
-                      )}
+                  {(cateringPackage.minimumGuests || cateringPackage.maximumGuests) && (
+                    <p className="mt-4 text-sm font-medium text-foreground/70">
+                      {formatGuestRange(cateringPackage.minimumGuests, cateringPackage.maximumGuests)}
+                    </p>
+                  )}
 
-                      {cateringPackage.pricingType ===
-                        "per_person" && (
+                  {cateringPackage.items.length > 0 && (
+                    <p className="mt-3 text-xs text-foreground/50">
+                      Includes {cateringPackage.items.length} menu item
+                      {cateringPackage.items.length === 1 ? "" : "s"}
+                    </p>
+                  )}
+
+                  <div className="mt-auto pt-6">
+                    <p className="text-2xl font-bold text-primary">
+                      ${cateringPackage.price.toFixed(2)}
+                      {cateringPackage.pricingType === "per_person" && (
                         <span className="ml-1 text-sm font-medium text-foreground/50">
                           / person
                         </span>
@@ -146,110 +140,92 @@ export default async function CateringPage() {
 
                     <Link
                       href={`/catering/${cateringPackage.slug}`}
-                      className="mt-5 block rounded-xl bg-primary px-4 py-3 text-center font-semibold text-white transition hover:opacity-90"
+                      className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-center font-semibold text-white transition hover:opacity-90"
                     >
                       View Package
                     </Link>
                   </div>
-                </article>
-              )
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* Custom Catering */}
-      <section className="mt-16">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            Custom Catering
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold text-foreground">
-            Build Your Own
-          </h2>
-
-          <p className="mt-3 max-w-2xl text-foreground/60">
-            Looking for something more
-            specific? Build a custom
-            catering request from our
-            available selections.
-          </p>
-        </div>
-
-        {items.length === 0 ? (
-          <div className="mt-8 rounded-2xl bg-white p-8 shadow-sm">
-            <p className="text-foreground/60">
-              No custom catering items are
-              currently available.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              <article
-                key={item.id}
-                className="rounded-2xl bg-white p-6 shadow-sm"
-              >
-                {item.category && (
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
-                    {item.category}
-                  </p>
-                )}
-
-                <h3 className="mt-2 text-xl font-bold text-foreground">
-                  {item.name}
-                </h3>
-
-                {item.description && (
-                  <p className="mt-3 leading-6 text-foreground/60">
-                    {item.description}
-                  </p>
-                )}
-
-                <div className="mt-5">
-                  <span className="text-xl font-bold text-primary">
-                    $
-                    {item.price.toFixed(
-                      2
-                    )}
-                  </span>
-
-                  {item.pricingType ===
-                    "per_person" && (
-                    <span className="ml-1 text-sm text-foreground/50">
-                      / person
-                    </span>
-                  )}
-
-                  {item.pricingType ===
-                    "flat" && (
-                    <span className="ml-1 text-sm text-foreground/50">
-                      / item
-                    </span>
-                  )}
                 </div>
-
-                {item.minimumQuantity && (
-                  <p className="mt-2 text-xs text-foreground/50">
-                    Minimum quantity:{" "}
-                    {
-                      item.minimumQuantity
-                    }
-                  </p>
-                )}
               </article>
             ))}
           </div>
         )}
+      </section>
 
-        {items.length > 0 && (
-          <Link
-            href="/catering/custom"
-            className="mt-8 block rounded-2xl bg-primary p-6 text-center font-semibold text-white transition hover:opacity-90"
-          >
-            Build a Custom Catering Request
-          </Link>
+      <section className="mt-14">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+            Custom Catering
+          </p>
+          <h2 className="mt-2 text-3xl font-bold text-foreground">
+            Build Your Own Selection
+          </h2>
+          <p className="mt-3 max-w-2xl text-foreground/60">
+            Select individual catering items and request a tailored quote for your event.
+          </p>
+        </div>
+
+        {items.length === 0 ? (
+          <div className="mt-8 rounded-2xl border border-black/10 bg-white p-8 shadow-sm">
+            <p className="text-foreground/60">
+              No custom catering items are currently available.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {items.slice(0, 6).map((item) => (
+                <article
+                  key={item.id}
+                  className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden bg-black/5">
+                    {item.image ? (
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center px-4 text-center text-sm text-foreground/40">
+                        No item image available
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    {item.category && (
+                      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+                        {item.category}
+                      </p>
+                    )}
+                    <h3 className="mt-2 text-lg font-bold text-foreground">
+                      {item.name}
+                    </h3>
+                    {item.description && (
+                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-foreground/60">
+                        {item.description}
+                      </p>
+                    )}
+                    <p className="mt-3 text-base font-bold text-primary">
+                      ${item.price.toFixed(2)}
+                      <span className="ml-1 text-xs font-medium text-foreground/50">
+                        {item.pricingType === "per_person" ? "/ person" : "/ item"}
+                      </span>
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <Link
+              href="/catering/custom"
+              className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-6 py-3 text-center font-semibold text-white transition hover:opacity-90 sm:w-auto"
+            >
+              Build a Custom Catering Request
+            </Link>
+          </>
         )}
       </section>
     </main>

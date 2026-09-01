@@ -25,20 +25,31 @@ export default async function CateringPackagePage({
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-12">
+    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <Link
         href="/catering"
-        className="text-sm font-semibold text-primary hover:underline"
+        className="inline-flex min-h-10 items-center rounded-lg px-2 text-sm font-semibold text-primary outline-none transition hover:underline focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         ← Back to Catering
       </Link>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
-        {/* Package Information */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-          {/* Package Image */}
+      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+            Catering Package
+          </p>
 
-          <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-black/5">
+          <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">
+            {cateringPackage.name}
+          </h1>
+
+          {cateringPackage.description && (
+            <p className="mt-4 text-base leading-7 text-foreground/60 sm:text-lg sm:leading-8">
+              {cateringPackage.description}
+            </p>
+          )}
+
+          <div className="mt-6 relative aspect-[16/9] overflow-hidden rounded-2xl bg-black/5">
             {cateringPackage.image ? (
               <Image
                 src={cateringPackage.image}
@@ -59,58 +70,52 @@ export default async function CateringPackagePage({
             )}
           </div>
 
-          <p className="mt-8 text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            Catering Package
-          </p>
+          <section className="mt-8 grid gap-4 sm:grid-cols-2">
+            <article className="rounded-xl border border-black/10 bg-background p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground/50">
+                Pricing
+              </p>
+              <p className="mt-2 text-2xl font-bold text-primary">
+                ${cateringPackage.price.toFixed(2)}
+                {cateringPackage.pricingType === "per_person" && (
+                  <span className="ml-1 text-sm font-medium text-foreground/50">
+                    / person
+                  </span>
+                )}
+              </p>
+            </article>
 
-          <h1 className="mt-2 text-4xl font-bold text-foreground">
-            {cateringPackage.name}
-          </h1>
-
-          {cateringPackage.description && (
-            <p className="mt-4 text-lg leading-8 text-foreground/60">
-              {
-                cateringPackage.description
-              }
-            </p>
-          )}
-
-          {/* Guest Range */}
-          <section className="mt-8 border-t border-black/10 pt-6">
-            <h2 className="text-xl font-bold text-foreground">
-              Guest Count
-            </h2>
-
-            <p className="mt-3 text-foreground/70">
-              {formatGuestRange(
-                cateringPackage.minimumGuests,
-                cateringPackage.maximumGuests
-              )}
-            </p>
+            <article className="rounded-xl border border-black/10 bg-background p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground/50">
+                Guest Count
+              </p>
+              <p className="mt-2 font-semibold text-foreground">
+                {formatGuestRange(
+                  cateringPackage.minimumGuests,
+                  cateringPackage.maximumGuests
+                )}
+              </p>
+            </article>
           </section>
 
-          {/* Included Items */}
-          <section className="mt-6 border-t border-black/10 pt-6">
-            <h2 className="text-xl font-bold text-foreground">
-              Package Includes
+          <section className="mt-8 border-t border-black/10 pt-6">
+            <h2 className="text-2xl font-bold text-foreground">
+              Included Items
             </h2>
 
-            {cateringPackage.items.length ===
-            0 ? (
+            {cateringPackage.items.length === 0 ? (
               <p className="mt-3 text-foreground/60">
-                Package contents will be
-                confirmed with your
-                catering request.
+                Package contents will be confirmed with your catering request.
               </p>
             ) : (
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {cateringPackage.items.map(
                   (item, index) => (
                     <li
                       key={`${item.name}-${index}`}
-                      className="flex items-center justify-between rounded-xl bg-background px-4 py-3"
+                      className="flex items-center justify-between rounded-xl border border-black/10 bg-background px-4 py-3"
                     >
-                      <span className="font-medium">
+                      <span className="text-sm font-medium">
                         {item.name}
                       </span>
 
@@ -127,8 +132,11 @@ export default async function CateringPackagePage({
           </section>
         </div>
 
-        {/* Package Summary */}
-        <aside className="h-fit rounded-2xl bg-white p-6 shadow-sm">
+        <aside className="h-fit rounded-2xl border border-black/10 bg-white p-6 shadow-sm lg:sticky lg:top-24">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+            Request This Package
+          </p>
+
           <p className="text-sm text-foreground/50">
             {cateringPackage.pricingType ===
             "per_person"
@@ -150,12 +158,9 @@ export default async function CateringPackagePage({
             )}
           </p>
 
-          <div className="mt-6 rounded-xl bg-background p-4">
+          <div className="mt-6 rounded-xl border border-black/10 bg-background p-4">
             <p className="text-sm text-foreground/60">
-              Select your event date,
-              guest count and contact
-              information to submit a
-              catering request.
+              Enter your event date, guest count, and contact details below.
             </p>
           </div>
 
@@ -165,9 +170,7 @@ export default async function CateringPackagePage({
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-foreground/60">
-              Enter your event information below.
-              No payment is required until your
-              request is reviewed and approved.
+              No payment is required until your request is reviewed and approved.
             </p>
 
             <div className="mt-5">

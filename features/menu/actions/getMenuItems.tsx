@@ -18,6 +18,10 @@ export async function getMenuItems(): Promise<
     await MenuItem.find({
       available: true,
     })
+      .populate({
+        path: "categoryId",
+        select: "name",
+      })
       .sort({
         displayOrder: 1,
         name: 1,
@@ -44,7 +48,18 @@ export async function getMenuItems(): Promise<
       item.image,
 
     categoryId:
-      item.categoryId.toString(),
+      item.categoryId &&
+      typeof item.categoryId === "object" &&
+      "_id" in item.categoryId
+        ? item.categoryId._id.toString()
+        : item.categoryId.toString(),
+
+    categoryName:
+      item.categoryId &&
+      typeof item.categoryId === "object" &&
+      "name" in item.categoryId
+        ? item.categoryId.name
+        : undefined,
 
     available:
       item.available,

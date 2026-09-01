@@ -17,8 +17,8 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <main className="mx-auto max-w-4xl px-5 py-16 text-center sm:py-20">
-        <div className="rounded-2xl bg-white p-8 shadow-sm sm:p-10">
+      <main className="mx-auto max-w-4xl px-4 py-14 text-center sm:px-6 sm:py-20">
+        <div className="rounded-2xl border border-black/10 bg-white p-8 shadow-sm sm:p-10">
           <h1 className="text-3xl font-bold sm:text-4xl">Your cart is empty</h1>
           <p className="mt-4 text-foreground/60">Browse our menu and add something delicious.</p>
           <Link
@@ -33,15 +33,15 @@ export default function CartPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-12">
-      <div className="flex flex-col gap-2">
+    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">Order</p>
-        <h1 className="text-3xl font-bold sm:text-4xl">Shopping Cart</h1>
-        <p className="text-foreground/60">{totalItems} item{totalItems === 1 ? "" : "s"} in your cart</p>
+        <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Shopping Cart</h1>
+        <p className="mt-2 text-foreground/60">{totalItems} item{totalItems === 1 ? "" : "s"} in your cart</p>
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
-        <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
+        <section className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
           <h2 className="sr-only">Cart items</h2>
           <ul className="divide-y divide-black/10">
             {items.map((item) => (
@@ -60,7 +60,10 @@ export default function CartPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <h3 className="text-base font-semibold sm:text-lg">{item.name}</h3>
-                      <p className="font-semibold text-primary">${(item.price * item.quantity).toFixed(2)}</p>
+                      <div className="text-right">
+                        <p className="text-xs text-foreground/50">Item subtotal</p>
+                        <p className="font-semibold text-primary">${(item.price * item.quantity).toFixed(2)}</p>
+                      </div>
                     </div>
                     <p className="mt-1 text-sm text-foreground/60">${item.price.toFixed(2)} each</p>
 
@@ -88,6 +91,7 @@ export default function CartPage() {
                       <button
                         type="button"
                         onClick={() => removeItem(item.id)}
+                        aria-label={`Remove ${item.name} from cart`}
                         className="rounded-lg px-3 py-2 text-sm font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                       >
                         Remove
@@ -100,7 +104,7 @@ export default function CartPage() {
           </ul>
         </section>
 
-        <aside className="rounded-2xl bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-28">
+        <aside className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-24">
           <h2 className="text-xl font-bold">Order Summary</h2>
           <div className="mt-5 space-y-3 border-t border-black/10 pt-4">
             <div className="flex items-center justify-between text-sm">
