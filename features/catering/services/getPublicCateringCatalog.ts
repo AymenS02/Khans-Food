@@ -1,3 +1,5 @@
+import { connection } from "next/server";
+
 import { connectToDatabase } from "@/lib/mongodb";
 
 import CateringItem from "@/models/CateringItem";
@@ -10,6 +12,7 @@ import type {
 } from "../types/catering";
 
 export async function getPublicCateringCatalog(): Promise<PublicCateringCatalog> {
+  await connection();
   await connectToDatabase();
 
   const [

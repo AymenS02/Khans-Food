@@ -1,3 +1,5 @@
+import { connection } from "next/server";
+
 import { connectToDatabase } from "@/lib/mongodb";
 import BusinessSettings from "@/models/BusinessSettings";
 
@@ -25,6 +27,7 @@ export interface PublicBusinessSettings {
 }
 
 export async function getPublicBusinessSettings(): Promise<PublicBusinessSettings> {
+  await connection();
   await connectToDatabase();
 
   const settings = await BusinessSettings.findOne().lean();
