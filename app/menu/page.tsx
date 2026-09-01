@@ -1,9 +1,9 @@
 import { getMenuItems } from "@/features/menu/actions/getMenuItems";
 import MenuGrid from "@/features/menu/components/MenuGrid";
 
-const menuItems = await getMenuItems();
+export default async function MenuPage() {
+  const menuItems = await getMenuItems();
 
-export default function MenuPage() {
   return (
     <main className="bg-background px-5 py-16 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-7xl">

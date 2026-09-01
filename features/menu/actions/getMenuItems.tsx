@@ -1,5 +1,7 @@
 "use server";
 
+import { connection } from "next/server";
+
 import { connectToDatabase } from "@/lib/mongodb";
 
 import MenuItem from "@/models/MenuItem";
@@ -9,6 +11,7 @@ import type { MenuItem as MenuItemDTO } from "@/features/menu/types/menu";
 export async function getMenuItems(): Promise<
   MenuItemDTO[]
 > {
+  await connection();
   await connectToDatabase();
 
   const items =
