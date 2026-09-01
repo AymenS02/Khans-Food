@@ -85,12 +85,6 @@ export async function uploadMenuItemImage(
    * ==========================================
    */
 
-  console.log("UPLOAD FILE:", {
-  name: file.name,
-  type: file.type,
-  size: file.size,
-});
-
   const arrayBuffer =
     await file.arrayBuffer();
 

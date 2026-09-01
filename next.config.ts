@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+const cloudinaryCloudName =
+  process.env
+    .CLOUDINARY_CLOUD_NAME;
+
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
@@ -12,8 +16,9 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
-        pathname:
-          "/ddnmjsfog/image/upload/**",
+        pathname: cloudinaryCloudName
+          ? `/${cloudinaryCloudName}/image/upload/**`
+          : "/**",
       },
     ],
   },
