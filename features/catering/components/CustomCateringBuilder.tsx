@@ -91,40 +91,40 @@ export default function CustomCateringBuilder({
               quantity:
                 safeQuantity,
             }
-
-            function increaseQuantity(
-              item: PublicCateringItem
-            ) {
-              const selected =
-                getSelectedItem(item.id);
-
-              if (!selected) {
-                return;
-              }
-
-              changeQuantity(
-                item,
-                selected.quantity + 1
-              );
-            }
-
-            function decreaseQuantity(
-              item: PublicCateringItem
-            ) {
-              const selected =
-                getSelectedItem(item.id);
-
-              if (!selected) {
-                return;
-              }
-
-              changeQuantity(
-                item,
-                selected.quantity - 1
-              );
-            }
           : selected
       )
+    );
+  }
+
+  function increaseQuantity(
+    item: PublicCateringItem
+  ) {
+    const selected =
+      getSelectedItem(item.id);
+
+    if (!selected) {
+      return;
+    }
+
+    changeQuantity(
+      item,
+      selected.quantity + 1
+    );
+  }
+
+  function decreaseQuantity(
+    item: PublicCateringItem
+  ) {
+    const selected =
+      getSelectedItem(item.id);
+
+    if (!selected) {
+      return;
+    }
+
+    changeQuantity(
+      item,
+      selected.quantity - 1
     );
   }
 
