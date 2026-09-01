@@ -38,9 +38,6 @@ export default function GuestCateringPaymentClient({
       }
     >
       <PaymentForm
-        orderId={
-          orderId
-        }
         returnUrl={
           returnUrl
         }

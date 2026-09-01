@@ -22,7 +22,6 @@ export default function CateringPaymentClient({
       }
     >
       <PaymentForm
-        orderId={orderId}
         returnUrl={returnUrl}
       />
     </StripeProvider>
