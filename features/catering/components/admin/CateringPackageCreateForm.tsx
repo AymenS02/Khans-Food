@@ -2,7 +2,6 @@
 
 import {
   useActionState,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -64,22 +63,29 @@ export default function CateringPackageCreateForm({
     pending,
   ] =
     useActionState(
-      createCateringPackage,
+      async (
+        previousState: CreateCateringPackageActionState,
+        formData: FormData
+      ) => {
+        const nextState =
+          await createCateringPackage(
+            previousState,
+            formData
+          );
+
+        if (
+          nextState.success
+        ) {
+          formRef.current?.reset();
+          setSelectedItems(
+            {}
+          );
+        }
+
+        return nextState;
+      },
       initialState
     );
-
-  useEffect(() => {
-    if (state.success) {
-      formRef.current?.reset();
-
-      setSelectedItems(
-        {}
-      );
-    }
-  }, [
-    state.success,
-    state.message,
-  ]);
 
   const itemsJson =
     useMemo(

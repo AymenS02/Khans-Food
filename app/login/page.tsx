@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import {
   loginSchema,
@@ -11,6 +12,9 @@ import {
 } from "@/validators/auth.validator";
 
 export default function LoginPage() {
+  const router =
+    useRouter();
+
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -39,7 +43,8 @@ export default function LoginPage() {
       return;
     }
 
-    window.location.href = "/";
+    router.push("/");
+    router.refresh();
   }
 
   return (

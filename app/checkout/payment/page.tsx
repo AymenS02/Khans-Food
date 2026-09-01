@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import StripeProvider from "@/features/checkout/components/StripeProvider";
 import PaymentForm from "@/features/checkout/components/PaymentForm";
@@ -12,22 +12,52 @@ interface PaymentData {
 }
 
 export default function PaymentPage() {
-  const [
-    paymentData,
-    setPaymentData,
-  ] =
-    useState<PaymentData | null>(
-      null
+  const paymentData =
+    useSyncExternalStore(
+      subscribeToSessionStorage,
+      getPaymentDataSnapshot,
+      getEmptyPaymentDataSnapshot
     );
 
-  useEffect(() => {
+  if (!paymentData) {
+    return (
+      <main className="mx-auto max-w-2xl px-5 py-10">
+        <h1 className="text-3xl font-bold text-foreground">
+          Payment
+        </h1>
+
+        <p className="mt-4 text-foreground/70">
+          No payment session was found.
+        </p>
+      </main>
+    );
+  }
+
+  function subscribeToSessionStorage() {
+    return () => {};
+  }
+
+  function getEmptyPaymentDataSnapshot() {
+    return null;
+  }
+
+  function getPaymentDataSnapshot():
+    | PaymentData
+    | null {
+    if (
+      typeof window ===
+      "undefined"
+    ) {
+      return null;
+    }
+
     const stored =
       sessionStorage.getItem(
         "checkoutPayment"
       );
 
     if (!stored) {
-      return;
+      return null;
     }
 
     try {
@@ -46,38 +76,24 @@ export default function PaymentPage() {
           "checkoutPayment"
         );
 
-        return;
+        return null;
       }
 
-      setPaymentData({
+      return {
         orderId:
           parsed.orderId,
-
         clientSecret:
           parsed.clientSecret,
-
         successAccessToken:
           parsed.successAccessToken,
-      });
+      };
     } catch {
       sessionStorage.removeItem(
         "checkoutPayment"
       );
+
+      return null;
     }
-  }, []);
-
-  if (!paymentData) {
-    return (
-      <main className="mx-auto max-w-2xl px-5 py-10">
-        <h1 className="text-3xl font-bold text-foreground">
-          Payment
-        </h1>
-
-        <p className="mt-4 text-foreground/70">
-          No payment session was found.
-        </p>
-      </main>
-    );
   }
 
   const returnUrl =
