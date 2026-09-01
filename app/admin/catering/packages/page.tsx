@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import { getAdminCateringItems } from "@/actions/catering/getAdminCateringItems";
 
@@ -137,9 +138,11 @@ export default async function AdminCateringPackagesPage() {
                 >
                   {pkg.image && (
                     <div className="mb-5 overflow-hidden rounded-xl">
-                      <img
+                      <Image
                         src={pkg.image}
                         alt={pkg.name}
+                        width={1200}
+                        height={208}
                         className="h-52 w-full object-cover"
                       />
                     </div>

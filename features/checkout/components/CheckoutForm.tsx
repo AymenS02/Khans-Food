@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +18,9 @@ import {
 import { formatPickupTime } from "../utils/formatPickupTime";
 
 export default function CheckoutForm() {
+  const router =
+    useRouter();
+
   const {
     register,
     handleSubmit,
@@ -373,8 +377,9 @@ export default function CheckoutForm() {
         })
       );
 
-      window.location.href =
-        "/checkout/payment";
+      router.push(
+        "/checkout/payment"
+      );
     } catch (error) {
       console.error(
         "Checkout request failed:",

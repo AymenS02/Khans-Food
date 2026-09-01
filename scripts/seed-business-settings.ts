@@ -5,6 +5,12 @@ dotenv.config({
 });
 
 async function seedBusinessSettings() {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Refusing to run seed-business-settings in production."
+    );
+  }
+
   const { connectToDatabase } =
     await import("@/lib/mongodb");
 

@@ -10,13 +10,10 @@ import {
 import { useReloadOnPaymentPageRestore } from "@/features/checkout/hooks/useReloadOnPaymentPageRestore";
 
 interface PaymentFormProps {
-  orderId: string;
-
   returnUrl: string;
 }
 
 export default function PaymentForm({
-  orderId,
   returnUrl,
 }: PaymentFormProps) {
 

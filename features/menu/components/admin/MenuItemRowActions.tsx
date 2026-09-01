@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import {
   useActionState,
 } from "react";
@@ -172,9 +174,11 @@ export default function MenuItemRowActions({
                   </p>
 
                   <div className="mt-2">
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
+                      width={96}
+                      height={96}
                       className="h-24 w-24 rounded-xl object-cover"
                     />
                   </div>
