@@ -13,8 +13,7 @@ interface CateringPaymentCompletePageProps {
 export default async function CateringPaymentCompletePage({
   params,
 }: CateringPaymentCompletePageProps) {
-  const { id } =
-    await params;
+  const { id } = await params;
 
   /*
    * We deliberately do NOT trust query
@@ -31,77 +30,167 @@ export default async function CateringPaymentCompletePage({
     );
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-12">
-      <Link
-        href={`/account/orders/${payment.orderId}`}
-        className="text-sm font-semibold text-primary hover:underline"
-      >
-        ← Back to Order
-      </Link>
+    <main className="overflow-hidden">
+      {/* =========================================
+          HERO
+      ========================================= */}
 
-      <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-        <div className="border-b border-black/10 pb-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+        <Link
+          href={`/account/orders/${payment.orderId}`}
+          className="group inline-flex items-center gap-2 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-foreground/50 transition hover:text-primary"
+        >
+          <span className="transition-transform group-hover:-translate-x-1">
+            ←
+          </span>
+
+          Back to Order
+        </Link>
+
+        <div className="mt-10 border-b border-foreground/15 pb-12 sm:pb-16">
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-primary">
             Catering Payment
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-foreground">
+          <h1 className="mt-4 max-w-4xl font-rye text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
             Payment Status
           </h1>
-        </div>
 
-        {/* Order summary */}
-        <div className="grid gap-5 border-b border-black/10 py-6 sm:grid-cols-3">
-          <div>
-            <p className="text-sm text-foreground/50">
-              Event
-            </p>
+          <div className="my-7 flex items-center gap-3">
+            <div className="h-px w-16 bg-foreground/25" />
 
-            <p className="mt-1 font-semibold">
-              {formatDateOnly(
-                payment.eventDate
-              )}
-            </p>
+            <span className="text-xs text-primary">
+              ◆
+            </span>
+
+            <div className="h-px w-16 bg-foreground/25" />
           </div>
 
-          <div>
-            <p className="text-sm text-foreground/50">
-              Guests
-            </p>
+          <p className="max-w-2xl font-sans text-sm leading-6 text-foreground/55 sm:text-base sm:leading-7">
+            We&apos;re confirming the
+            latest status of your
+            catering payment and order.
+          </p>
+        </div>
+      </section>
 
-            <p className="mt-1 font-semibold">
-              {
-                payment.guestCount
-              }
-            </p>
+      {/* =========================================
+          PAYMENT STATUS CONTENT
+      ========================================= */}
+
+      <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 sm:pb-28 lg:px-12">
+        <div className="grid gap-10 lg:grid-cols-[1fr_340px] lg:gap-16">
+          {/* =====================================
+              LIVE STATUS
+          ===================================== */}
+
+          <div>
+            <div className="border-b border-foreground/15 pb-8">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                Live Status
+              </p>
+
+              <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+                Your Payment
+              </h2>
+
+              <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-foreground/55">
+                Your payment status is
+                verified against the
+                actual order and Stripe
+                PaymentIntent.
+              </p>
+            </div>
+
+            <div className="pt-8">
+              <CateringPaymentCompleteClient
+                orderId={
+                  payment.orderId
+                }
+                initialStatus={
+                  payment.status
+                }
+              />
+            </div>
           </div>
 
-          <div>
-            <p className="text-sm text-foreground/50">
-              Total
-            </p>
+          {/* =====================================
+              EVENT SUMMARY
+          ===================================== */}
 
-            <p className="mt-1 text-xl font-bold text-primary">
-              $
-              {payment.total.toFixed(
-                2
-              )}
-            </p>
-          </div>
-        </div>
+          <aside className="h-fit bg-foreground text-background lg:sticky lg:top-28">
+            <div className="p-6 sm:p-7">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                Your Event
+              </p>
 
-        {/* Live status */}
-        <div className="pt-6">
-          <CateringPaymentCompleteClient
-            orderId={
-              payment.orderId
-            }
-            initialStatus={
-              payment.status
-            }
-          />
+              <h2 className="mt-3 font-rye text-3xl">
+                Catering Summary
+              </h2>
+
+              <div className="my-6 h-px bg-background/15" />
+
+              {/* EVENT */}
+
+              <div>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  Event Date
+                </p>
+
+                <p className="mt-2 font-rye text-xl">
+                  {formatDateOnly(
+                    payment.eventDate
+                  )}
+                </p>
+              </div>
+
+              {/* GUESTS */}
+
+              <div className="mt-6 border-t border-background/15 pt-5">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  Guests
+                </p>
+
+                <p className="mt-2 font-rye text-2xl">
+                  {
+                    payment.guestCount
+                  }
+                </p>
+              </div>
+
+              {/* TOTAL */}
+
+              <div className="mt-6 border-t border-background/15 pt-5">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  Total
+                </p>
+
+                <p className="mt-2 font-rye text-4xl text-primary">
+                  $
+                  {payment.total.toFixed(
+                    2
+                  )}
+                </p>
+              </div>
+
+              {/* ORDER LINK */}
+
+              <div className="mt-7 border-t border-background/15 pt-6">
+                <Link
+                  href={`/account/orders/${payment.orderId}`}
+                  className="group/link flex min-h-11 w-full items-center justify-between border border-background/25 px-4 py-3 font-sans text-xs font-bold uppercase tracking-[0.13em] text-background transition hover:bg-background hover:text-foreground"
+                >
+                  View Order
+
+                  <span className="text-lg transition-transform group-hover/link:translate-x-1">
+                    →
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </aside>
         </div>
-      </div>
+      </section>
     </main>
   );
 }

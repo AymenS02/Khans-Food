@@ -2,142 +2,500 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import {
+  useState,
+  type ReactNode,
+} from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { registerCustomer } from "@/actions/auth/registerCustomer";
-import { registerSchema, type RegisterInput } from "@/validators/auth.validator";
+import {
+  registerSchema,
+  type RegisterInput,
+} from "@/validators/auth.validator";
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const router =
+    useRouter();
+
+  const [
+    serverError,
+    setServerError,
+  ] =
+    useState<
+      string | null
+    >(null);
 
   const {
     register,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      password: "",
-      confirmPassword: "",
+    formState: {
+      errors,
+      isSubmitting,
     },
-  });
+  } =
+    useForm<RegisterInput>({
+      resolver:
+        zodResolver(
+          registerSchema
+        ),
 
-  async function onSubmit(data: RegisterInput) {
+      defaultValues: {
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+      },
+    });
+
+  async function onSubmit(
+    data: RegisterInput
+  ) {
     setServerError(null);
 
-    const result = await registerCustomer(data);
+    const result =
+      await registerCustomer(
+        data
+      );
 
     if (!result.success) {
-      if (result.fieldErrors) {
-        const entries = Object.entries(result.fieldErrors) as [keyof RegisterInput, string[] | undefined][];
+      if (
+        result.fieldErrors
+      ) {
+        const entries =
+          Object.entries(
+            result.fieldErrors
+          ) as [
+            keyof RegisterInput,
+            string[] | undefined,
+          ][];
 
-        entries.forEach(([fieldName, fieldErrors]) => {
-          if (fieldErrors?.[0]) {
-            setError(fieldName, { type: "server", message: fieldErrors[0] });
+        entries.forEach(
+          ([
+            fieldName,
+            fieldErrors,
+          ]) => {
+            if (
+              fieldErrors?.[0]
+            ) {
+              setError(
+                fieldName,
+                {
+                  type: "server",
+                  message:
+                    fieldErrors[0],
+                }
+              );
+            }
           }
-        });
+        );
       }
 
-      setServerError(result.message);
+      setServerError(
+        result.message
+      );
+
       return;
     }
 
-    router.push("/login?registered=1");
+    router.push(
+      "/login?registered=1"
+    );
+
     router.refresh();
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-lg rounded-2xl bg-surface p-8 shadow-md">
-        <h1 className="text-3xl font-bold text-foreground">Create Account</h1>
-        <p className="mt-2 text-sm text-foreground/60">Register a customer account to track your orders and catering requests.</p>
+    <main className="overflow-hidden">
+      {/* =========================================
+          REGISTER
+      ========================================= */}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="First name" id="firstName" error={errors.firstName?.message}>
-              <input id="firstName" type="text" autoComplete="given-name" {...register("firstName")} className={inputClassName} />
-            </Field>
-            <Field label="Last name" id="lastName" error={errors.lastName?.message}>
-              <input id="lastName" type="text" autoComplete="family-name" {...register("lastName")} className={inputClassName} />
-            </Field>
+      <section className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-7xl items-start gap-12 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-20 lg:px-12 lg:py-24">
+        {/* =====================================
+            BRAND / INTRO
+        ===================================== */}
+
+        <div className="lg:sticky lg:top-28">
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+            Khans Food
+          </p>
+
+          <h1 className="mt-4 max-w-xl font-rye text-4xl leading-[1.1] text-foreground sm:text-5xl lg:text-6xl">
+            Join the
+            <br />
+            Table.
+          </h1>
+
+          <div className="my-7 flex items-center gap-3">
+            <div className="h-px w-16 bg-foreground/25" />
+
+            <span className="text-xs text-primary">
+              ◆
+            </span>
+
+            <div className="h-px w-16 bg-foreground/25" />
           </div>
 
-          <Field label="Email" id="email" error={errors.email?.message}>
-            <input id="email" type="email" autoComplete="email" {...register("email")} className={inputClassName} />
-          </Field>
+          <p className="max-w-lg font-sans text-sm leading-6 text-foreground/55 sm:text-base sm:leading-7">
+            Create your Khans Food
+            account to keep your
+            pickup orders, catering
+            requests, and payment
+            details all in one place.
+          </p>
 
-          <Field label="Phone (optional)" id="phone" error={errors.phone?.message}>
-            <input id="phone" type="tel" autoComplete="tel" {...register("phone")} className={inputClassName} />
-          </Field>
+          {/* BENEFITS */}
 
-          <Field label="Password" id="password" error={errors.password?.message}>
-            <input id="password" type="password" autoComplete="new-password" {...register("password")} className={inputClassName} />
-          </Field>
+          <div className="mt-10 hidden border-t border-foreground/15 pt-8 lg:block">
+            <div className="space-y-7">
+              <AccountBenefit
+                number="01"
+                title="Track Orders"
+                description="Keep up with your pickup orders and view their latest status."
+              />
 
-          <Field label="Confirm password" id="confirmPassword" error={errors.confirmPassword?.message}>
-            <input
-              id="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              {...register("confirmPassword")}
-              className={inputClassName}
-            />
-          </Field>
+              <AccountBenefit
+                number="02"
+                title="Manage Catering"
+                description="Follow catering requests from submission through approval and payment."
+              />
 
-          {serverError && (
-            <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-              {serverError}
-            </p>
-          )}
+              <AccountBenefit
+                number="03"
+                title="Order Faster"
+                description="Keep everything connected to one customer account for future orders."
+              />
+            </div>
+          </div>
+        </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSubmitting ? "Creating account..." : "Create account"}
-          </button>
-        </form>
+        {/* =====================================
+            FORM
+        ===================================== */}
 
-        <p className="mt-5 text-sm text-foreground/60">
-          Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-primary hover:underline">
-            Sign in
-          </Link>
-        </p>
-      </div>
+        <div className="w-full lg:ml-auto lg:max-w-2xl">
+          <div className="border-y border-foreground/15 py-8 sm:px-8 sm:py-10">
+            <div className="mb-8">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                Create Account
+              </p>
+
+              <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+                Your Details
+              </h2>
+
+              <p className="mt-3 max-w-lg font-sans text-sm leading-6 text-foreground/50">
+                Enter your information
+                below to create a
+                customer account.
+              </p>
+            </div>
+
+            <form
+              onSubmit={handleSubmit(
+                onSubmit
+              )}
+              className="space-y-6"
+            >
+              {/* NAME */}
+
+              <div className="grid gap-6 sm:grid-cols-2">
+                <Field
+                  label="First Name"
+                  id="firstName"
+                  error={
+                    errors
+                      .firstName
+                      ?.message
+                  }
+                >
+                  <input
+                    id="firstName"
+                    type="text"
+                    autoComplete="given-name"
+                    {...register(
+                      "firstName"
+                    )}
+                    className={
+                      inputClassName
+                    }
+                  />
+                </Field>
+
+                <Field
+                  label="Last Name"
+                  id="lastName"
+                  error={
+                    errors
+                      .lastName
+                      ?.message
+                  }
+                >
+                  <input
+                    id="lastName"
+                    type="text"
+                    autoComplete="family-name"
+                    {...register(
+                      "lastName"
+                    )}
+                    className={
+                      inputClassName
+                    }
+                  />
+                </Field>
+              </div>
+
+              {/* EMAIL */}
+
+              <Field
+                label="Email"
+                id="email"
+                error={
+                  errors.email
+                    ?.message
+                }
+              >
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  {...register(
+                    "email"
+                  )}
+                  className={
+                    inputClassName
+                  }
+                />
+              </Field>
+
+              {/* PHONE */}
+
+              <Field
+                label="Phone"
+                optional
+                id="phone"
+                error={
+                  errors.phone
+                    ?.message
+                }
+              >
+                <input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  {...register(
+                    "phone"
+                  )}
+                  className={
+                    inputClassName
+                  }
+                />
+              </Field>
+
+              {/* PASSWORDS */}
+
+              <div className="grid gap-6 sm:grid-cols-2">
+                <Field
+                  label="Password"
+                  id="password"
+                  error={
+                    errors
+                      .password
+                      ?.message
+                  }
+                >
+                  <input
+                    id="password"
+                    type="password"
+                    autoComplete="new-password"
+                    {...register(
+                      "password"
+                    )}
+                    className={
+                      inputClassName
+                    }
+                  />
+                </Field>
+
+                <Field
+                  label="Confirm Password"
+                  id="confirmPassword"
+                  error={
+                    errors
+                      .confirmPassword
+                      ?.message
+                  }
+                >
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    {...register(
+                      "confirmPassword"
+                    )}
+                    className={
+                      inputClassName
+                    }
+                  />
+                </Field>
+              </div>
+
+              {/* SERVER ERROR */}
+
+              {serverError && (
+                <div
+                  role="alert"
+                  className="border border-accent/30 bg-accent/10 px-4 py-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-accent/30 font-sans text-xs font-bold text-accent">
+                      !
+                    </span>
+
+                    <p className="font-sans text-sm leading-6 text-accent">
+                      {
+                        serverError
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* SUBMIT */}
+
+              <button
+                type="submit"
+                disabled={
+                  isSubmitting
+                }
+                className="group flex min-h-12 w-full items-center justify-between bg-primary px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span>
+                  {isSubmitting
+                    ? "Creating Account..."
+                    : "Create Account"}
+                </span>
+
+                {!isSubmitting && (
+                  <span className="text-lg transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
+                )}
+              </button>
+            </form>
+
+            {/* ===================================
+                LOGIN
+            =================================== */}
+
+            <div className="mt-8 border-t border-foreground/15 pt-6">
+              <p className="font-sans text-xs text-foreground/45">
+                Already have an
+                account?
+              </p>
+
+              <Link
+                href="/login"
+                className="group mt-2 inline-flex items-center gap-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-foreground transition hover:text-primary"
+              >
+                Sign In
+
+                <span className="text-lg transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
+
+/* =============================================
+   FORM FIELD
+============================================= */
 
 function Field({
   label,
   id,
   error,
+  optional = false,
   children,
 }: {
   label: string;
   id: string;
   error?: string;
+  optional?: boolean;
   children: ReactNode;
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-sm font-medium text-foreground">
-        {label}
-      </label>
-      {children}
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      <div className="flex items-center justify-between gap-4">
+        <label
+          htmlFor={id}
+          className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-foreground/55"
+        >
+          {label}
+        </label>
+
+        {optional && (
+          <span className="font-sans text-[10px] uppercase tracking-[0.12em] text-foreground/30">
+            Optional
+          </span>
+        )}
+      </div>
+
+      <div className="mt-2">
+        {children}
+      </div>
+
+      {error && (
+        <p className="mt-2 font-sans text-xs font-medium leading-5 text-accent">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
 
-const inputClassName = "w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary";
+/* =============================================
+   ACCOUNT BENEFIT
+============================================= */
+
+function AccountBenefit({
+  number,
+  title,
+  description,
+}: {
+  number: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="grid grid-cols-[32px_1fr] gap-4">
+      <p className="pt-1 font-sans text-[10px] font-bold text-primary">
+        {number}
+      </p>
+
+      <div>
+        <p className="font-rye text-lg text-foreground">
+          {title}
+        </p>
+
+        <p className="mt-1 max-w-sm font-sans text-xs leading-5 text-foreground/45">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const inputClassName =
+  "min-h-12 w-full border border-foreground/20 bg-transparent px-4 py-3 font-sans text-sm text-foreground outline-none transition placeholder:text-foreground/30 focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20";

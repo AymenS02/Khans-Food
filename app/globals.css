@@ -50,3 +50,7 @@ summary {
   outline: 2px solid color-mix(in srgb, var(--primary) 70%, white);
   outline-offset: 2px;
 }
+
+@theme inline {
+  --font-rye: var(--font-rye-next);
+}

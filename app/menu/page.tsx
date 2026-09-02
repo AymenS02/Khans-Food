@@ -2,29 +2,57 @@ import { getMenuItems } from "@/features/menu/actions/getMenuItems";
 import MenuGrid from "@/features/menu/components/MenuGrid";
 
 export default async function MenuPage() {
-  const menuItems = await getMenuItems();
+  const menuItems =
+    await getMenuItems();
 
   return (
-    <main className="bg-background px-4 py-12 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-      <div className="mx-auto max-w-7xl">
-        <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+    <main className="overflow-hidden">
+      {/* =========================================
+          HERO
+      ========================================= */}
+
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-28">
+        <div className="max-w-4xl">
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.35em] text-primary">
             Khans Food
           </p>
 
-          <h1 className="mt-3 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
-            Our Menu
+          <h1 className="mt-5 font-rye text-5xl leading-tight text-foreground sm:text-6xl lg:text-7xl">
+            Made Fresh.
+            <br />
+            Made to Share.
           </h1>
 
-          <p className="mt-4 max-w-2xl text-base leading-7 text-foreground/60 sm:text-lg sm:leading-8">
-            Freshly prepared favorites made to order. Browse by category and add items to your cart in a tap.
+          <div className="my-8 flex items-center gap-3">
+            <div className="h-px w-20 bg-foreground/30" />
+
+            <span className="text-xs text-primary">
+              ◆
+            </span>
+
+            <div className="h-px w-20 bg-foreground/30" />
+          </div>
+
+          <p className="max-w-2xl font-sans text-base leading-7 text-foreground/60 sm:text-lg sm:leading-8">
+            Explore our menu of
+            freshly prepared favourites,
+            bold flavours, and dishes
+            made for sharing.
           </p>
         </div>
+      </section>
 
-        <div className="mt-8 sm:mt-10">
-          <MenuGrid items={menuItems} />
+      {/* =========================================
+          MENU
+      ========================================= */}
+
+      <section className="border-t border-foreground/10">
+        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+          <MenuGrid
+            items={menuItems}
+          />
         </div>
-      </div>
+      </section>
     </main>
   );
 }

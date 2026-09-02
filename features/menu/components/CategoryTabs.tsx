@@ -3,7 +3,9 @@
 interface CategoryTabsProps {
   categories: string[];
   activeCategory: string;
-  onCategoryChange: (category: string) => void;
+  onCategoryChange: (
+    category: string
+  ) => void;
 }
 
 export default function CategoryTabs({
@@ -13,25 +15,45 @@ export default function CategoryTabs({
 }: CategoryTabsProps) {
   return (
     <div className="-mx-1 overflow-x-auto px-1">
-      <div className="flex min-w-max gap-2">
-        {categories.map((category) => {
-          const isActive = category === activeCategory;
+      <div className="flex min-w-max items-center gap-1">
+        {categories.map(
+          (category) => {
+            const isActive =
+              category ===
+              activeCategory;
 
-          return (
-            <button
-              key={category}
-              type="button"
-              onClick={() => onCategoryChange(category)}
-              className={`min-h-10 rounded-full border px-4 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40 ${
-                isActive
-                  ? "border-primary bg-primary text-white"
-                  : "border-black/10 bg-background text-foreground hover:border-primary/30 hover:bg-primary/5"
-              }`}
-            >
-              {category}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={
+                  category
+                }
+                type="button"
+                onClick={() =>
+                  onCategoryChange(
+                    category
+                  )
+                }
+                className={`relative min-h-10 px-4 py-2 font-sans text-xs font-semibold uppercase tracking-[0.12em] outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                  isActive
+                    ? "text-primary"
+                    : "text-foreground/50 hover:text-foreground"
+                }`}
+              >
+                {
+                  category
+                }
+
+                <span
+                  className={`absolute bottom-0 left-4 right-4 h-px transition ${
+                    isActive
+                      ? "bg-primary"
+                      : "bg-transparent"
+                  }`}
+                />
+              </button>
+            );
+          }
+        )}
       </div>
     </div>
   );

@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import {
-  useForm,
-} from "react-hook-form";
-
-import {
-  zodResolver,
-} from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { createCustomCateringRequest } from "@/actions/catering/createCustomCateringRequest";
 
@@ -50,22 +43,20 @@ export default function CustomCateringRequestForm({
       errors,
       isSubmitting,
     },
-  } =
-    useForm<CustomCateringContactData>({
-      resolver:
-        zodResolver(
-          customCateringContactSchema
-        ),
+  } = useForm<CustomCateringContactData>({
+    resolver: zodResolver(
+      customCateringContactSchema
+    ),
 
-      defaultValues: {
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        eventDate: "",
-        notes: "",
-      },
-    });
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      eventDate: "",
+      notes: "",
+    },
+  });
 
   async function onSubmit(
     data: CustomCateringContactData
@@ -76,16 +67,15 @@ export default function CustomCateringRequestForm({
 
         guestCount,
 
-        items:
-          selectedItems.map(
-            (item) => ({
-              cateringItemId:
-                item.id,
+        items: selectedItems.map(
+          (item) => ({
+            cateringItemId:
+              item.id,
 
-              quantity:
-                item.quantity,
-            })
-          ),
+            quantity:
+              item.quantity,
+          })
+        ),
       });
 
     if (
@@ -112,53 +102,89 @@ export default function CustomCateringRequestForm({
     });
   }
 
+  /* ============================================
+     SUCCESS STATE
+  ============================================ */
+
   if (submittedRequest) {
     return (
-      <div
+      <section
         role="status"
-        className="rounded-2xl border border-secondary/20 bg-secondary/10 p-6"
+        className="border-y border-secondary/30 bg-secondary/[0.08] py-8 sm:px-6 sm:py-10"
       >
-        <h2 className="text-2xl font-bold text-foreground">
-          Request Submitted
-        </h2>
-
-        <p className="mt-3 text-foreground/70">
-          Your custom catering request
-          has been received and is
-          waiting for review.
-        </p>
-
-        {submittedRequest.estimatedSubtotal !==
-          undefined && (
-          <div className="mt-5 rounded-xl bg-white/70 p-4">
-            <p className="text-sm text-foreground/50">
-              Estimated Subtotal
-            </p>
-
-            <p className="mt-1 text-2xl font-bold text-primary">
-              $
-              {submittedRequest.estimatedSubtotal.toFixed(
-                2
-              )}
-            </p>
-
-            <p className="mt-1 text-xs text-foreground/50">
-              Final pricing will be
-              confirmed after review.
-            </p>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-secondary font-sans text-sm font-bold text-white">
+            ✓
           </div>
-        )}
 
-        <div className="mt-4 rounded-xl bg-white/70 p-4">
-          <p className="text-xs text-foreground/50">
-            Request ID
-          </p>
+          <div className="min-w-0 flex-1">
+            <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-secondary">
+              Request Received
+            </p>
 
-          <p className="mt-1 break-all font-mono text-xs font-semibold">
-            {submittedRequest.id}
-          </p>
+            <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+              Your Feast Is in Review.
+            </h2>
+
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px w-14 bg-foreground/20" />
+
+              <span className="text-xs text-primary">
+                ◆
+              </span>
+            </div>
+
+            <p className="max-w-xl font-sans text-sm leading-6 text-foreground/60 sm:text-base">
+              Your custom catering
+              request has been received.
+              Khans Food will review the
+              details and confirm final
+              pricing before payment is
+              required.
+            </p>
+
+            {/* ESTIMATED SUBTOTAL */}
+
+            {submittedRequest.estimatedSubtotal !==
+              undefined && (
+              <div className="mt-8 border-t border-foreground/15 pt-6">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground/40">
+                  Estimated Subtotal
+                </p>
+
+                <p className="mt-2 font-rye text-4xl text-primary">
+                  $
+                  {submittedRequest.estimatedSubtotal.toFixed(
+                    2
+                  )}
+                </p>
+
+                <p className="mt-2 max-w-md font-sans text-xs leading-5 text-foreground/45">
+                  This is an estimate
+                  only. Final pricing
+                  will be confirmed
+                  after your request is
+                  reviewed.
+                </p>
+              </div>
+            )}
+
+            {/* REQUEST ID */}
+
+            <div className="mt-6 border-t border-foreground/15 pt-6">
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground/40">
+                Request ID
+              </p>
+
+              <p className="mt-2 break-all font-mono text-xs font-semibold leading-5 text-foreground/65">
+                {
+                  submittedRequest.id
+                }
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -167,187 +193,338 @@ export default function CustomCateringRequestForm({
       onSubmit={
         handleSubmit(onSubmit)
       }
-      className="space-y-5"
+      className="space-y-8"
     >
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label
-            htmlFor="firstName"
-            className="block text-sm font-semibold"
-          >
-            First Name
-          </label>
+      {/* =========================================
+          CONTACT DETAILS
+      ========================================= */}
 
-          <input
+      <section>
+        <div className="mb-6">
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+            Your Details
+          </p>
+
+          <h3 className="mt-2 font-rye text-2xl text-foreground sm:text-3xl">
+            Who Should We Contact?
+          </h3>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          {/* FIRST NAME */}
+
+          <Field
+            label="First Name"
             id="firstName"
-            type="text"
-            {...register(
-              "firstName"
-            )}
-            className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3"
-          />
-
-          {errors.firstName && (
-            <p className="mt-2 text-sm text-accent">
-              {
-                errors.firstName
-                  .message
-              }
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label
-            htmlFor="lastName"
-            className="block text-sm font-semibold"
-          >
-            Last Name
-          </label>
-
-          <input
-            id="lastName"
-            type="text"
-            {...register(
-              "lastName"
-            )}
-            className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3"
-          />
-
-          {errors.lastName && (
-            <p className="mt-2 text-sm text-accent">
-              {
-                errors.lastName
-                  .message
-              }
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-semibold"
-        >
-          Email
-        </label>
-
-        <input
-          id="email"
-          type="email"
-          {...register("email")}
-          className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3"
-        />
-
-        {errors.email && (
-          <p className="mt-2 text-sm text-accent">
-            {errors.email.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="phone"
-          className="block text-sm font-semibold"
-        >
-          Phone
-        </label>
-
-        <input
-          id="phone"
-          type="tel"
-          {...register("phone")}
-          className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3"
-        />
-
-        {errors.phone && (
-          <p className="mt-2 text-sm text-accent">
-            {errors.phone.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="eventDate"
-          className="block text-sm font-semibold"
-        >
-          Event Date
-        </label>
-
-        <input
-          id="eventDate"
-          type="date"
-          {...register(
-            "eventDate"
-          )}
-          className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3"
-        />
-
-        {errors.eventDate && (
-          <p className="mt-2 text-sm text-accent">
-            {
-              errors.eventDate
-                .message
+            error={
+              errors.firstName
+                ?.message
             }
+          >
+            <input
+              id="firstName"
+              type="text"
+              autoComplete="given-name"
+              {...register(
+                "firstName"
+              )}
+              className={
+                inputClassName
+              }
+            />
+          </Field>
+
+          {/* LAST NAME */}
+
+          <Field
+            label="Last Name"
+            id="lastName"
+            error={
+              errors.lastName
+                ?.message
+            }
+          >
+            <input
+              id="lastName"
+              type="text"
+              autoComplete="family-name"
+              {...register(
+                "lastName"
+              )}
+              className={
+                inputClassName
+              }
+            />
+          </Field>
+
+          {/* EMAIL */}
+
+          <Field
+            label="Email"
+            id="email"
+            error={
+              errors.email
+                ?.message
+            }
+          >
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              {...register(
+                "email"
+              )}
+              className={
+                inputClassName
+              }
+            />
+          </Field>
+
+          {/* PHONE */}
+
+          <Field
+            label="Phone"
+            id="phone"
+            error={
+              errors.phone
+                ?.message
+            }
+          >
+            <input
+              id="phone"
+              type="tel"
+              autoComplete="tel"
+              {...register(
+                "phone"
+              )}
+              className={
+                inputClassName
+              }
+            />
+          </Field>
+        </div>
+      </section>
+
+      {/* =========================================
+          EVENT DETAILS
+      ========================================= */}
+
+      <section className="border-t border-foreground/15 pt-8">
+        <div className="mb-6">
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+            Your Event
           </p>
-        )}
-      </div>
 
-      <div>
-        <label
-          htmlFor="notes"
-          className="block text-sm font-semibold"
-        >
-          Event Notes
-        </label>
+          <h3 className="mt-2 font-rye text-2xl text-foreground sm:text-3xl">
+            Tell Us the Details.
+          </h3>
+        </div>
 
-        <textarea
-          id="notes"
-          rows={4}
-          {...register("notes")}
-          placeholder="Tell us anything we should know about your event."
-          className="mt-2 w-full resize-none rounded-xl border border-black/10 bg-background px-4 py-3"
-        />
+        <div className="grid gap-6 sm:grid-cols-2">
+          {/* EVENT DATE */}
 
-        {errors.notes && (
-          <p className="mt-2 text-sm text-accent">
-            {errors.notes.message}
-          </p>
-        )}
-      </div>
+          <Field
+            label="Event Date"
+            id="eventDate"
+            error={
+              errors.eventDate
+                ?.message
+            }
+          >
+            <input
+              id="eventDate"
+              type="date"
+              {...register(
+                "eventDate"
+              )}
+              className={
+                inputClassName
+              }
+            />
+          </Field>
+
+          {/* GUEST COUNT */}
+
+          <div>
+            <p className={labelClassName}>
+              Guest Count
+            </p>
+
+            <div className="mt-2 flex min-h-12 items-center border border-foreground/15 bg-foreground/[0.025] px-4">
+              <span className="font-rye text-xl text-primary">
+                {guestCount}
+              </span>
+
+              <span className="ml-2 font-sans text-xs text-foreground/40">
+                guests
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* NOTES */}
+
+        <div className="mt-6">
+          <Field
+            label="Event Notes"
+            id="notes"
+            error={
+              errors.notes
+                ?.message
+            }
+          >
+            <textarea
+              id="notes"
+              rows={5}
+              {...register(
+                "notes"
+              )}
+              placeholder="Tell us anything we should know about your event."
+              className={`${inputClassName} min-h-32 resize-y`}
+            />
+          </Field>
+        </div>
+      </section>
+
+      {/* =========================================
+          REQUEST SUMMARY
+      ========================================= */}
+
+      <section className="border-y border-foreground/15 py-6">
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div>
+            <p className={labelClassName}>
+              Guests
+            </p>
+
+            <p className="mt-2 font-rye text-2xl text-foreground">
+              {guestCount}
+            </p>
+          </div>
+
+          <div>
+            <p className={labelClassName}>
+              Selected Dishes
+            </p>
+
+            <p className="mt-2 font-rye text-2xl text-foreground">
+              {selectedItems.length}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================
+          SERVER ERROR
+      ========================================= */}
 
       {errors.root?.message && (
         <div
           role="alert"
-          className="rounded-xl border border-accent/20 bg-accent/10 px-4 py-3"
+          className="border border-accent/30 bg-accent/10 px-4 py-4"
         >
-          <p className="text-sm font-medium text-accent">
-            {
-              errors.root
-                .message
-            }
-          </p>
+          <div className="flex items-start gap-3">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-accent/30 font-sans text-xs font-bold text-accent">
+              !
+            </span>
+
+            <p className="font-sans text-sm leading-6 text-accent">
+              {
+                errors.root
+                  .message
+              }
+            </p>
+          </div>
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isSubmitting
-          ? "Submitting..."
-          : "Submit Catering Request"}
-      </button>
+      {/* =========================================
+          SUBMIT
+      ========================================= */}
 
-      <p className="text-center text-xs text-foreground/50">
-        No payment is required until
-        your request has been reviewed
-        and approved.
-      </p>
+      <div>
+        <button
+          type="submit"
+          disabled={
+            isSubmitting
+          }
+          className="group flex min-h-12 w-full items-center justify-between bg-primary px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <span>
+            {isSubmitting
+              ? "Submitting..."
+              : "Submit Catering Request"}
+          </span>
+
+          {!isSubmitting && (
+            <span className="ml-5 text-lg transition-transform group-hover:translate-x-1">
+              →
+            </span>
+          )}
+        </button>
+
+        <div className="mt-4 flex items-start justify-center gap-2">
+          <span className="mt-0.5 text-[10px] text-primary">
+            ◆
+          </span>
+
+          <p className="max-w-md text-center font-sans text-xs leading-5 text-foreground/45">
+            No payment is required
+            until your request has
+            been reviewed and
+            approved.
+          </p>
+        </div>
+      </div>
     </form>
   );
 }
+
+/* =============================================
+   FIELD
+============================================= */
+
+function Field({
+  label,
+  id,
+  error,
+  children,
+}: {
+  label: string;
+  id: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className={
+          labelClassName
+        }
+      >
+        {label}
+      </label>
+
+      <div className="mt-2">
+        {children}
+      </div>
+
+      {error && (
+        <p className="mt-2 font-sans text-xs font-medium leading-5 text-accent">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* =============================================
+   STYLES
+============================================= */
+
+const labelClassName =
+  "block font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground/45";
+
+const inputClassName =
+  "min-h-12 w-full border border-foreground/20 bg-transparent px-4 py-3 font-sans text-sm text-foreground outline-none transition placeholder:text-foreground/30 focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20";

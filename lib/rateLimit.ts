@@ -147,6 +147,13 @@ export async function checkRateLimit({
       {
         new: true,
         upsert: true,
+
+        /*
+         * Required by Mongoose 9 when
+         * using an aggregation pipeline
+         * array as the update argument.
+         */
+        updatePipeline: true,
       }
     ).lean();
 

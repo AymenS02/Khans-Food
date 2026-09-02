@@ -5,10 +5,19 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { auth } from "@/auth";
 
+import { Rye } from "next/font/google";
+
 export const metadata: Metadata = {
   title: "Khans Food",
   description: "Khans Food Catering",
 };
+
+const rye = Rye({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-rye",
+  display: "swap",
+});
 
 export default async function RootLayout({
   children,
@@ -25,7 +34,7 @@ export default async function RootLayout({
       lang="en"
       className="antialiased"
     >
-      <body className="flex min-h-screen flex-col bg-background text-foreground">
+      <body className="flex min-h-screen flex-col bg-background text-foreground {rye.variable}">
         <Navbar
           isLoggedIn={isLoggedIn}
           isAdmin={isAdmin}

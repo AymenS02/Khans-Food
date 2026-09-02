@@ -1,6 +1,7 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+
 import PackageCateringRequestForm from "@/features/catering/components/PackageCateringRequestForm";
 import { getPublicCateringPackageBySlug } from "@/features/catering/services/getPublicCateringPackageBySlug";
 
@@ -13,7 +14,8 @@ interface CateringPackagePageProps {
 export default async function CateringPackagePage({
   params,
 }: CateringPackagePageProps) {
-  const { slug } = await params;
+  const { slug } =
+    await params;
 
   const cateringPackage =
     await getPublicCateringPackageBySlug(
@@ -25,103 +27,188 @@ export default async function CateringPackagePage({
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <Link
-        href="/catering"
-        className="inline-flex min-h-10 items-center rounded-lg px-2 text-sm font-semibold text-primary outline-none transition hover:underline focus-visible:ring-2 focus-visible:ring-primary/40"
-      >
-        ← Back to Catering
-      </Link>
+    <main className="overflow-hidden">
+      {/* =========================================
+          HERO
+      ========================================= */}
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            Catering Package
-          </p>
+      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+        <Link
+          href="/catering"
+          className="group inline-flex items-center gap-2 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-foreground/50 transition hover:text-primary"
+        >
+          <span className="transition-transform group-hover:-translate-x-1">
+            ←
+          </span>
 
-          <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">
-            {cateringPackage.name}
-          </h1>
+          Back to Catering
+        </Link>
 
-          {cateringPackage.description && (
-            <p className="mt-4 text-base leading-7 text-foreground/60 sm:text-lg sm:leading-8">
-              {cateringPackage.description}
+        <div className="mt-10 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-16">
+          {/* TEXT */}
+
+          <div>
+            <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+              Catering Package
             </p>
-          )}
 
-          <div className="mt-6 relative aspect-[16/9] overflow-hidden rounded-2xl bg-black/5">
-            {cateringPackage.image ? (
-              <Image
-                src={cateringPackage.image}
-                alt={cateringPackage.name}
-                fill
-                sizes="
-                  (max-width: 1024px) 100vw,
-                  700px
-                "
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center px-6 text-center">
-                <span className="text-sm font-medium text-foreground/40">
-                  No package image available
-                </span>
-              </div>
+            <h1 className="mt-4 font-rye text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              {cateringPackage.name}
+            </h1>
+
+            <div className="my-7 flex items-center gap-3">
+              <div className="h-px w-16 bg-foreground/25" />
+
+              <span className="text-xs text-primary">
+                ◆
+              </span>
+
+              <div className="h-px w-16 bg-foreground/25" />
+            </div>
+
+            {cateringPackage.description && (
+              <p className="max-w-2xl font-sans text-sm leading-6 text-foreground/55 sm:text-base sm:leading-7">
+                {
+                  cateringPackage.description
+                }
+              </p>
             )}
+
+            <div className="mt-8 flex flex-wrap gap-8 border-t border-foreground/15 pt-7">
+              <div>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/40">
+                  Price
+                </p>
+
+                <p className="mt-2 font-rye text-3xl text-primary">
+                  $
+                  {cateringPackage.price.toFixed(
+                    2
+                  )}
+
+                  {cateringPackage.pricingType ===
+                    "per_person" && (
+                    <span className="ml-1 font-sans text-xs font-medium text-foreground/45">
+                      / person
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/40">
+                  Guests
+                </p>
+
+                <p className="mt-2 font-rye text-xl text-foreground">
+                  {formatGuestRange(
+                    cateringPackage.minimumGuests,
+                    cateringPackage.maximumGuests
+                  )}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <section className="mt-8 grid gap-4 sm:grid-cols-2">
-            <article className="rounded-xl border border-black/10 bg-background p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground/50">
-                Pricing
-              </p>
-              <p className="mt-2 text-2xl font-bold text-primary">
-                ${cateringPackage.price.toFixed(2)}
-                {cateringPackage.pricingType === "per_person" && (
-                  <span className="ml-1 text-sm font-medium text-foreground/50">
-                    / person
+          {/* IMAGE */}
+
+          <div className="relative">
+            <div className="absolute -left-4 -top-4 h-full w-full border border-primary/25" />
+
+            <div className="relative aspect-[4/3] overflow-hidden bg-foreground/5">
+              {cateringPackage.image ? (
+                <Image
+                  src={
+                    cateringPackage.image
+                  }
+                  alt={
+                    cateringPackage.name
+                  }
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-6 text-center">
+                  <span className="font-sans text-sm text-foreground/40">
+                    No package image
+                    available
                   </span>
-                )}
-              </p>
-            </article>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
-            <article className="rounded-xl border border-black/10 bg-background p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground/50">
-                Guest Count
-              </p>
-              <p className="mt-2 font-semibold text-foreground">
-                {formatGuestRange(
-                  cateringPackage.minimumGuests,
-                  cateringPackage.maximumGuests
-                )}
-              </p>
-            </article>
-          </section>
+      {/* =========================================
+          CONTENT
+      ========================================= */}
 
-          <section className="mt-8 border-t border-black/10 pt-6">
-            <h2 className="text-2xl font-bold text-foreground">
-              Included Items
+      <section className="border-t border-foreground/10">
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1fr_360px] lg:gap-16 lg:px-12 lg:py-24">
+          {/* =====================================
+              INCLUDED ITEMS
+          ===================================== */}
+
+          <div>
+            <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+              What&apos;s Included
+            </p>
+
+            <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+              Built for the Table
             </h2>
 
-            {cateringPackage.items.length === 0 ? (
-              <p className="mt-3 text-foreground/60">
-                Package contents will be confirmed with your catering request.
-              </p>
+            <div className="my-6 flex items-center gap-3">
+              <div className="h-px w-14 bg-foreground/25" />
+
+              <span className="text-xs text-primary">
+                ◆
+              </span>
+            </div>
+
+            {cateringPackage.items.length ===
+            0 ? (
+              <div className="border-y border-foreground/15 py-8">
+                <p className="max-w-xl font-sans text-sm leading-6 text-foreground/55">
+                  Package contents will
+                  be confirmed with your
+                  catering request.
+                </p>
+              </div>
             ) : (
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              <ul className="border-t border-foreground/15">
                 {cateringPackage.items.map(
-                  (item, index) => (
+                  (
+                    item,
+                    index
+                  ) => (
                     <li
                       key={`${item.name}-${index}`}
-                      className="flex items-center justify-between rounded-xl border border-black/10 bg-background px-4 py-3"
+                      className="grid grid-cols-[auto_1fr_auto] items-center gap-4 border-b border-foreground/15 py-5"
                     >
-                      <span className="text-sm font-medium">
+                      <span className="font-sans text-[10px] font-bold text-primary">
+                        {String(
+                          index + 1
+                        ).padStart(
+                          2,
+                          "0"
+                        )}
+                      </span>
+
+                      <span className="font-rye text-lg text-foreground sm:text-xl">
                         {item.name}
                       </span>
 
-                      {item.quantity > 1 && (
-                        <span className="text-sm font-semibold text-foreground/50">
-                          × {item.quantity}
+                      {item.quantity >
+                        1 && (
+                        <span className="font-sans text-xs font-semibold text-foreground/45">
+                          ×{" "}
+                          {
+                            item.quantity
+                          }
                         </span>
                       )}
                     </li>
@@ -129,66 +216,165 @@ export default async function CateringPackagePage({
                 )}
               </ul>
             )}
-          </section>
-        </div>
 
-        <aside className="h-fit rounded-2xl border border-black/10 bg-white p-6 shadow-sm lg:sticky lg:top-24">
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
-            Request This Package
-          </p>
+            {/* ===================================
+                PACKAGE NOTES
+            =================================== */}
 
-          <p className="text-sm text-foreground/50">
-            {cateringPackage.pricingType ===
-            "per_person"
-              ? "Price per person"
-              : "Package price"}
-          </p>
+            <div className="mt-12 grid gap-6 border-y border-foreground/15 py-8 sm:grid-cols-2">
+              <div>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/40">
+                  Pricing Type
+                </p>
 
-          <p className="mt-1 text-3xl font-bold text-primary">
-            $
-            {cateringPackage.price.toFixed(
-              2
-            )}
+                <p className="mt-2 font-sans text-sm font-semibold capitalize">
+                  {cateringPackage.pricingType ===
+                  "per_person"
+                    ? "Per person"
+                    : "Package price"}
+                </p>
+              </div>
 
-            {cateringPackage.pricingType ===
-              "per_person" && (
-              <span className="ml-1 text-sm font-medium text-foreground/50">
-                / person
-              </span>
-            )}
-          </p>
+              <div>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/40">
+                  Guest Range
+                </p>
 
-          <div className="mt-6 rounded-xl border border-black/10 bg-background p-4">
-            <p className="text-sm text-foreground/60">
-              Enter your event date, guest count, and contact details below.
-            </p>
-          </div>
-
-          <div className="mt-6 border-t border-black/10 pt-6">
-            <h2 className="text-xl font-bold text-foreground">
-              Request This Package
-            </h2>
-
-            <p className="mt-2 text-sm leading-6 text-foreground/60">
-              No payment is required until your request is reviewed and approved.
-            </p>
-
-            <div className="mt-5">
-              <PackageCateringRequestForm
-                packageId={
-                  cateringPackage.id
-                }
-                minimumGuests={
-                  cateringPackage.minimumGuests
-                }
-                maximumGuests={
-                  cateringPackage.maximumGuests
-                }
-              />
+                <p className="mt-2 font-sans text-sm font-semibold">
+                  {formatGuestRange(
+                    cateringPackage.minimumGuests,
+                    cateringPackage.maximumGuests
+                  )}
+                </p>
+              </div>
             </div>
           </div>
-        </aside>
-      </div>
+
+          {/* =====================================
+              REQUEST PANEL
+          ===================================== */}
+
+          <aside className="h-fit bg-foreground text-background lg:sticky lg:top-28">
+            <div className="p-6 sm:p-7">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                Request This Package
+              </p>
+
+              <h2 className="mt-3 font-rye text-3xl">
+                Start Your Request
+              </h2>
+
+              <div className="my-6 h-px bg-background/15" />
+
+              {/* PRICE */}
+
+              <div>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  {cateringPackage.pricingType ===
+                  "per_person"
+                    ? "Price Per Person"
+                    : "Package Price"}
+                </p>
+
+                <p className="mt-2 font-rye text-4xl text-primary">
+                  $
+                  {cateringPackage.price.toFixed(
+                    2
+                  )}
+
+                  {cateringPackage.pricingType ===
+                    "per_person" && (
+                    <span className="ml-1 font-sans text-xs font-medium text-background/45">
+                      / person
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              {/* GUEST RANGE */}
+
+              <div className="mt-6 border-t border-background/15 pt-5">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  Guest Count
+                </p>
+
+                <p className="mt-2 font-sans text-sm font-semibold">
+                  {formatGuestRange(
+                    cateringPackage.minimumGuests,
+                    cateringPackage.maximumGuests
+                  )}
+                </p>
+              </div>
+
+              {/* INFO */}
+
+              <div className="mt-6 border-t border-background/15 pt-5">
+                <p className="font-sans text-xs leading-5 text-background/55">
+                  Enter your event
+                  date, guest count,
+                  and contact details
+                  below to send your
+                  request for review.
+                </p>
+
+                <p className="mt-3 font-sans text-xs leading-5 text-background/40">
+                  No payment is
+                  required until your
+                  request is reviewed
+                  and approved.
+                </p>
+              </div>
+
+              {/* FORM */}
+
+              <div className="mt-7 border-t border-background/15 pt-6">
+                <PackageCateringRequestForm
+                  packageId={
+                    cateringPackage.id
+                  }
+                  minimumGuests={
+                    cateringPackage.minimumGuests
+                  }
+                  maximumGuests={
+                    cateringPackage.maximumGuests
+                  }
+                />
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* =========================================
+          BOTTOM CTA
+      ========================================= */}
+
+      <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 sm:pb-28 lg:px-12">
+        <div className="border-t border-foreground/15 pt-10">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                Want Something Different?
+              </p>
+
+              <h2 className="mt-2 font-rye text-2xl sm:text-3xl">
+                Build Your Own Feast.
+              </h2>
+            </div>
+
+            <Link
+              href="/catering/custom"
+              className="group flex min-h-12 w-full items-center justify-between border border-foreground/20 px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] transition hover:bg-foreground hover:text-background sm:w-auto sm:min-w-[220px]"
+            >
+              Custom Catering
+
+              <span className="ml-5 text-lg transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
@@ -197,7 +383,10 @@ function formatGuestRange(
   minimum?: number,
   maximum?: number
 ) {
-  if (minimum && maximum) {
+  if (
+    minimum &&
+    maximum
+  ) {
     return `${minimum}–${maximum} guests`;
   }
 

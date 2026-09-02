@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import {
-  useForm,
-} from "react-hook-form";
-
-import {
-  zodResolver,
-} from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { createPackageCateringRequest } from "@/actions/catering/createPackageCateringRequest";
 
@@ -21,7 +14,6 @@ import {
 
 interface PackageCateringRequestFormProps {
   packageId: string;
-
   minimumGuests?: number;
   maximumGuests?: number;
 }
@@ -34,10 +26,9 @@ export default function PackageCateringRequestForm({
   const [
     submittedRequestId,
     setSubmittedRequestId,
-  ] =
-    useState<string | null>(
-      null
-    );
+  ] = useState<string | null>(
+    null
+  );
 
   const {
     register,
@@ -114,30 +105,62 @@ export default function PackageCateringRequestForm({
    */
   if (submittedRequestId) {
     return (
-      <div
+      <section
         role="status"
-        className="rounded-2xl border border-secondary/20 bg-secondary/10 p-6"
+        className="border-y border-secondary/30 bg-secondary/[0.08] py-7 sm:px-5 sm:py-8"
       >
-        <h2 className="text-xl font-bold text-foreground">
-          Request Submitted
-        </h2>
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-secondary font-sans text-sm font-bold text-white">
+            ✓
+          </div>
 
-        <p className="mt-3 text-sm leading-6 text-foreground/70">
-          Your catering request has been
-          received and is waiting for
-          review.
-        </p>
+          <div className="min-w-0 flex-1">
+            <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.22em] text-secondary">
+              Request Received
+            </p>
 
-        <div className="mt-4 rounded-xl bg-white/70 p-3">
-          <p className="text-xs text-foreground/50">
-            Request ID
-          </p>
+            <h2 className="mt-2 font-rye text-2xl leading-tight text-foreground sm:text-3xl">
+              Request Submitted
+            </h2>
 
-          <p className="mt-1 break-all font-mono text-xs font-semibold">
-            {submittedRequestId}
-          </p>
+            <p className="mt-4 font-sans text-sm leading-6 text-foreground/60">
+              Your catering request
+              has been received and is
+              waiting for review.
+            </p>
+
+            <div className="mt-6 border-t border-foreground/15 pt-5">
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground/40">
+                Request ID
+              </p>
+
+              <p className="mt-2 break-all font-mono text-xs font-semibold leading-5 text-foreground/65">
+                {
+                  submittedRequestId
+                }
+              </p>
+            </div>
+
+            <div className="mt-6 border-t border-foreground/15 pt-5">
+              <div className="flex items-start gap-3">
+                <span
+                  aria-hidden="true"
+                  className="mt-0.5 text-xs text-primary"
+                >
+                  ◆
+                </span>
+
+                <p className="font-sans text-xs leading-5 text-foreground/45">
+                  No payment is required
+                  until your request has
+                  been reviewed and
+                  approved.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -146,246 +169,340 @@ export default function PackageCateringRequestForm({
       onSubmit={
         handleSubmit(onSubmit)
       }
-      className="space-y-5"
+      className="space-y-8"
     >
       <input
         type="hidden"
         {...register("packageId")}
       />
 
-      {/* Contact */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-        <div>
-          <label
-            htmlFor="firstName"
-            className="block text-sm font-semibold"
-          >
-            First Name
-          </label>
+      {/* =========================================
+          CONTACT
+      ========================================= */}
 
-          <input
+      <section>
+        <div className="mb-6">
+          <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
+            Your Details
+          </p>
+
+          <h3 className="mt-2 font-rye text-2xl text-background">
+            Who Should We Contact?
+          </h3>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
+          <Field
+            label="First Name"
             id="firstName"
-            type="text"
-            {...register(
-              "firstName"
-            )}
-            className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
-          />
-
-          {errors.firstName && (
-            <p className="mt-2 text-sm text-accent">
-              {
-                errors.firstName
-                  .message
-              }
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label
-            htmlFor="lastName"
-            className="block text-sm font-semibold"
+            error={
+              errors.firstName
+                ?.message
+            }
+            dark
           >
-            Last Name
-          </label>
-
-          <input
-            id="lastName"
-            type="text"
-            {...register(
-              "lastName"
-            )}
-            className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
-          />
-
-          {errors.lastName && (
-            <p className="mt-2 text-sm text-accent">
-              {
-                errors.lastName
-                  .message
+            <input
+              id="firstName"
+              type="text"
+              autoComplete="given-name"
+              {...register(
+                "firstName"
+              )}
+              className={
+                darkInputClassName
               }
-            </p>
-          )}
+            />
+          </Field>
+
+          <Field
+            label="Last Name"
+            id="lastName"
+            error={
+              errors.lastName
+                ?.message
+            }
+            dark
+          >
+            <input
+              id="lastName"
+              type="text"
+              autoComplete="family-name"
+              {...register(
+                "lastName"
+              )}
+              className={
+                darkInputClassName
+              }
+            />
+          </Field>
         </div>
-      </div>
 
-      <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-semibold"
-        >
-          Email
-        </label>
+        <div className="mt-5 space-y-5">
+          <Field
+            label="Email"
+            id="email"
+            error={
+              errors.email
+                ?.message
+            }
+            dark
+          >
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              {...register(
+                "email"
+              )}
+              className={
+                darkInputClassName
+              }
+            />
+          </Field>
 
-        <input
-          id="email"
-          type="email"
-          {...register("email")}
-          className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
-        />
+          <Field
+            label="Phone"
+            id="phone"
+            error={
+              errors.phone
+                ?.message
+            }
+            dark
+          >
+            <input
+              id="phone"
+              type="tel"
+              autoComplete="tel"
+              {...register(
+                "phone"
+              )}
+              className={
+                darkInputClassName
+              }
+            />
+          </Field>
+        </div>
+      </section>
 
-        {errors.email && (
-          <p className="mt-2 text-sm text-accent">
-            {errors.email.message}
+      {/* =========================================
+          EVENT
+      ========================================= */}
+
+      <section className="border-t border-background/15 pt-7">
+        <div className="mb-6">
+          <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
+            Your Event
           </p>
-        )}
-      </div>
 
-      <div>
-        <label
-          htmlFor="phone"
-          className="block text-sm font-semibold"
-        >
-          Phone
-        </label>
+          <h3 className="mt-2 font-rye text-2xl text-background">
+            Tell Us the Details.
+          </h3>
+        </div>
 
-        <input
-          id="phone"
-          type="tel"
-          {...register("phone")}
-          className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
-        />
+        <div className="space-y-5">
+          {/* EVENT DATE */}
 
-        {errors.phone && (
-          <p className="mt-2 text-sm text-accent">
-            {errors.phone.message}
-          </p>
-        )}
-      </div>
-
-      {/* Event */}
-      <div>
-        <label
-          htmlFor="eventDate"
-          className="block text-sm font-semibold"
-        >
-          Event Date
-        </label>
-
-        <input
-          id="eventDate"
-          type="date"
-          {...register(
-            "eventDate"
-          )}
-          className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
-        />
-
-        {errors.eventDate && (
-          <p className="mt-2 text-sm text-accent">
-            {
+          <Field
+            label="Event Date"
+            id="eventDate"
+            error={
               errors.eventDate
-                .message
+                ?.message
             }
-          </p>
-        )}
-      </div>
+            dark
+          >
+            <input
+              id="eventDate"
+              type="date"
+              {...register(
+                "eventDate"
+              )}
+              className={
+                darkInputClassName
+              }
+            />
+          </Field>
 
-      <div>
-        <label
-          htmlFor="guestCount"
-          className="block text-sm font-semibold"
-        >
-          Guest Count
-        </label>
+          {/* GUEST COUNT */}
 
-        <input
-          id="guestCount"
-          type="number"
-          min={
-            minimumGuests ?? 1
-          }
-          max={
-            maximumGuests
-          }
-          {...register(
-            "guestCount",
-            {
-              valueAsNumber: true,
-            }
-          )}
-          className="mt-2 w-full rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
-        />
-
-        {(minimumGuests ||
-          maximumGuests) && (
-          <p className="mt-2 text-xs text-foreground/50">
-            {formatGuestRequirement(
-              minimumGuests,
-              maximumGuests
-            )}
-          </p>
-        )}
-
-        {errors.guestCount && (
-          <p className="mt-2 text-sm text-accent">
-            {
+          <Field
+            label="Guest Count"
+            id="guestCount"
+            error={
               errors.guestCount
-                .message
+                ?.message
             }
-          </p>
-        )}
-      </div>
+            dark
+          >
+            <input
+              id="guestCount"
+              type="number"
+              min={
+                minimumGuests ?? 1
+              }
+              max={
+                maximumGuests
+              }
+              {...register(
+                "guestCount",
+                {
+                  valueAsNumber: true,
+                }
+              )}
+              className={
+                darkInputClassName
+              }
+            />
 
-      {/* Notes */}
-      <div>
-        <label
-          htmlFor="notes"
-          className="block text-sm font-semibold"
-        >
-          Event Notes
-        </label>
+            {(minimumGuests ||
+              maximumGuests) && (
+              <p className="mt-2 font-sans text-xs leading-5 text-background/40">
+                {formatGuestRequirement(
+                  minimumGuests,
+                  maximumGuests
+                )}
+              </p>
+            )}
+          </Field>
 
-        <textarea
-          id="notes"
-          rows={4}
-          {...register("notes")}
-          placeholder="Tell us anything we should know about your event."
-          className="mt-2 w-full resize-none rounded-xl border border-black/10 bg-background px-4 py-3 outline-none focus:border-primary"
-        />
+          {/* NOTES */}
 
-        {errors.notes && (
-          <p className="mt-2 text-sm text-accent">
-            {errors.notes.message}
-          </p>
-        )}
-      </div>
+          <Field
+            label="Event Notes"
+            id="notes"
+            error={
+              errors.notes
+                ?.message
+            }
+            dark
+          >
+            <textarea
+              id="notes"
+              rows={5}
+              {...register(
+                "notes"
+              )}
+              placeholder="Tell us anything we should know about your event."
+              className={`${darkInputClassName} min-h-32 resize-y`}
+            />
+          </Field>
+        </div>
+      </section>
 
-      {/* Server error */}
+      {/* =========================================
+          SERVER ERROR
+      ========================================= */}
+
       {errors.root?.message && (
         <div
           role="alert"
-          className="rounded-xl border border-accent/20 bg-accent/10 px-4 py-3"
+          className="border border-accent/40 bg-accent/10 px-4 py-4"
         >
-          <p className="text-sm font-medium text-accent">
-            {
-              errors.root
-                .message
-            }
-          </p>
+          <div className="flex items-start gap-3">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-accent/40 font-sans text-xs font-bold text-accent">
+              !
+            </span>
+
+            <p className="font-sans text-sm leading-6 text-accent">
+              {
+                errors.root
+                  .message
+              }
+            </p>
+          </div>
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isSubmitting
-          ? "Submitting..."
-          : "Submit Catering Request"}
-      </button>
+      {/* =========================================
+          SUBMIT
+      ========================================= */}
 
-      <p className="text-center text-xs leading-5 text-foreground/50">
-        Submitting a request does not
-        require payment. The request
-        will be reviewed before it is
-        approved.
-      </p>
+      <div className="border-t border-background/15 pt-6">
+        <button
+          type="submit"
+          disabled={
+            isSubmitting
+          }
+          className="group flex min-h-12 w-full items-center justify-between bg-primary px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <span>
+            {isSubmitting
+              ? "Submitting..."
+              : "Submit Request"}
+          </span>
+
+          {!isSubmitting && (
+            <span className="ml-5 text-lg transition-transform group-hover:translate-x-1">
+              →
+            </span>
+          )}
+        </button>
+
+        <div className="mt-4 flex items-start justify-center gap-2">
+          <span
+            aria-hidden="true"
+            className="mt-0.5 text-[9px] text-primary"
+          >
+            ◆
+          </span>
+
+          <p className="max-w-xs text-center font-sans text-xs leading-5 text-background/40">
+            No payment is required
+            until your request has been
+            reviewed and approved.
+          </p>
+        </div>
+      </div>
     </form>
   );
 }
+
+/* =============================================
+   FIELD
+============================================= */
+
+function Field({
+  label,
+  id,
+  error,
+  dark = false,
+  children,
+}: {
+  label: string;
+  id: string;
+  error?: string;
+  dark?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className={`block font-sans text-[10px] font-semibold uppercase tracking-[0.14em] ${
+          dark
+            ? "text-background/45"
+            : "text-foreground/45"
+        }`}
+      >
+        {label}
+      </label>
+
+      <div className="mt-2">
+        {children}
+      </div>
+
+      {error && (
+        <p className="mt-2 font-sans text-xs font-medium leading-5 text-accent">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* =============================================
+   HELPERS
+============================================= */
 
 function formatGuestRequirement(
   minimum?: number,
@@ -408,3 +525,6 @@ function formatGuestRequirement(
 
   return "";
 }
+
+const darkInputClassName =
+  "min-h-12 w-full border border-background/20 bg-transparent px-4 py-3 font-sans text-sm text-background outline-none transition placeholder:text-background/25 focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40";

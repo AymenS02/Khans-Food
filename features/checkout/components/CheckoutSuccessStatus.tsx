@@ -3,6 +3,7 @@
 import {
   useEffect,
   useState,
+  type ReactNode,
 } from "react";
 
 import Link from "next/link";
@@ -25,14 +26,10 @@ type OrderStatus =
 
 interface CheckoutSuccessStatusProps {
   orderId: string;
-
   accessToken: string;
-
   firstName: string;
-
   initialPaymentStatus:
     PaymentStatus;
-
   initialOrderStatus:
     OrderStatus;
 }
@@ -133,7 +130,7 @@ export default function CheckoutSuccessStatus({
 
         if (
           attempts >=
-          maxAttempts &&
+            maxAttempts &&
           result.paymentStatus ===
             "pending"
         ) {
@@ -189,9 +186,9 @@ export default function CheckoutSuccessStatus({
   ]);
 
   /*
-   * -----------------------------------------
+   * ==========================================
    * PAID
-   * -----------------------------------------
+   * ==========================================
    */
 
   if (
@@ -207,40 +204,62 @@ export default function CheckoutSuccessStatus({
          */}
         <ClearCart />
 
-        <div
+        <StatusPanel
           role="status"
-          className="rounded-xl border border-secondary/20 bg-secondary/10 p-5"
+          tone="success"
+          eyebrow="Payment Confirmed"
+          title={`Thank You, ${firstName}.`}
+          icon="✓"
         >
-          <h2 className="text-xl font-bold text-foreground">
-            Order Confirmed
-          </h2>
-
-          <p className="mt-2 leading-6 text-foreground/70">
-            Thank you,{" "}
-            {firstName}. Your
-            payment has been
-            confirmed.
+          <p className="font-sans text-sm leading-6 text-foreground/60 sm:text-base sm:leading-7">
+            Your payment has been
+            confirmed and your order
+            is now in the hands of
+            Khans Food.
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full bg-white/70 px-3 py-1 text-sm font-semibold capitalize">
-              Order:{" "}
-              {orderStatus}
+          <div className="mt-7 grid gap-4 border-t border-foreground/15 pt-5 sm:grid-cols-2">
+            <StatusDetail
+              label="Order"
+              value={
+                formatStatus(
+                  orderStatus
+                )
+              }
+            />
+
+            <StatusDetail
+              label="Payment"
+              value="Paid"
+              accent
+            />
+          </div>
+
+          <div className="mt-6 flex items-start gap-3">
+            <span
+              aria-hidden="true"
+              className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center border border-secondary/30 font-sans text-[10px] text-secondary"
+            >
+              ✓
             </span>
 
-            <span className="rounded-full bg-white/70 px-3 py-1 text-sm font-semibold">
-              Payment: Paid
-            </span>
+            <p className="max-w-lg font-sans text-xs leading-5 text-foreground/45">
+              No additional payment
+              action is required. You
+              can use the order details
+              on this page to review
+              your pickup information.
+            </p>
           </div>
-        </div>
+        </StatusPanel>
       </>
     );
   }
 
   /*
-   * -----------------------------------------
+   * ==========================================
    * FAILED
-   * -----------------------------------------
+   * ==========================================
    */
 
   if (
@@ -248,34 +267,38 @@ export default function CheckoutSuccessStatus({
     "failed"
   ) {
     return (
-      <div
+      <StatusPanel
         role="alert"
-        className="rounded-xl border border-accent/20 bg-accent/10 p-5"
+        tone="error"
+        eyebrow="Payment Issue"
+        title="Payment Not Completed"
+        icon="×"
       >
-        <h2 className="text-xl font-bold text-foreground">
-          Payment Not Completed
-        </h2>
-
-        <p className="mt-2 leading-6 text-foreground/70">
-          Your order was created,
-          but the payment did not
-          complete.
+        <p className="font-sans text-sm leading-6 text-foreground/60 sm:text-base sm:leading-7">
+          Your order was created, but
+          the payment did not complete.
+          Return to the payment page to
+          try again.
         </p>
 
         <Link
           href="/checkout/payment"
-          className="mt-5 inline-block rounded-xl bg-primary px-5 py-3 font-semibold text-white"
+          className="group mt-7 flex min-h-12 w-full items-center justify-between bg-primary px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:opacity-90 sm:w-auto sm:min-w-[220px]"
         >
           Return to Payment
+
+          <span className="ml-5 text-lg transition-transform group-hover:translate-x-1">
+            →
+          </span>
         </Link>
-      </div>
+      </StatusPanel>
     );
   }
 
   /*
-   * -----------------------------------------
+   * ==========================================
    * REFUNDED
-   * -----------------------------------------
+   * ==========================================
    */
 
   if (
@@ -283,54 +306,78 @@ export default function CheckoutSuccessStatus({
     "refunded"
   ) {
     return (
-      <div className="rounded-xl bg-background p-5">
-        <h2 className="text-xl font-bold text-foreground">
-          Payment Refunded
-        </h2>
-
-        <p className="mt-2 text-foreground/60">
+      <StatusPanel
+        role="status"
+        tone="neutral"
+        eyebrow="Payment Update"
+        title="Payment Refunded"
+        icon="↺"
+      >
+        <p className="font-sans text-sm leading-6 text-foreground/60 sm:text-base sm:leading-7">
           This payment has been
           refunded.
         </p>
-      </div>
+
+        <div className="mt-6 border-t border-foreground/15 pt-5">
+          <StatusDetail
+            label="Order Status"
+            value={
+              formatStatus(
+                orderStatus
+              )
+            }
+          />
+        </div>
+      </StatusPanel>
     );
   }
 
   /*
-   * -----------------------------------------
+   * ==========================================
    * PENDING
-   * -----------------------------------------
+   * ==========================================
    */
 
   return (
-    <div
+    <StatusPanel
       role="status"
-      className="rounded-xl bg-background p-5"
+      tone="processing"
+      eyebrow="Almost There"
+      title="Confirming Payment"
+      icon="…"
     >
-      <h2 className="text-xl font-bold text-foreground">
-        Confirming Payment
-      </h2>
-
       {!stoppedPolling ? (
         <>
-          <p className="mt-2 leading-6 text-foreground/60">
+          <p className="font-sans text-sm leading-6 text-foreground/60 sm:text-base sm:leading-7">
             Your order was received.
-            We are waiting for payment
-            confirmation to finish.
+            We&apos;re waiting for the
+            final payment confirmation
+            before marking the order as
+            paid.
           </p>
 
-          <div className="mt-5 flex items-center gap-3">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-black/10 border-t-primary" />
+          <div className="mt-7 flex items-start gap-4 border-t border-foreground/15 pt-5">
+            <div
+              aria-hidden="true"
+              className="mt-0.5 h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-foreground/10 border-t-primary"
+            />
 
-            <span className="text-sm font-medium text-foreground/60">
-              Checking payment
-              status...
-            </span>
+            <div>
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-foreground/60">
+                Checking Payment
+              </p>
+
+              <p className="mt-1 font-sans text-xs leading-5 text-foreground/40">
+                This page will update
+                automatically once the
+                payment is confirmed.
+              </p>
+            </div>
           </div>
         </>
       ) : (
         <>
-          <p className="mt-2 leading-6 text-foreground/60">
+          <p className="font-sans text-sm leading-6 text-foreground/60 sm:text-base sm:leading-7">
             Payment confirmation is
             taking longer than usual.
             Your order has not been
@@ -343,12 +390,165 @@ export default function CheckoutSuccessStatus({
             onClick={() =>
               window.location.reload()
             }
-            className="mt-5 rounded-xl bg-primary px-5 py-3 font-semibold text-white"
+            className="group mt-7 flex min-h-12 w-full items-center justify-between bg-primary px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:opacity-90 sm:w-auto sm:min-w-[190px]"
           >
             Check Again
+
+            <span className="ml-5 text-lg transition-transform group-hover:rotate-180">
+              ↻
+            </span>
           </button>
         </>
       )}
+    </StatusPanel>
+  );
+}
+
+/* =============================================
+   STATUS PANEL
+============================================= */
+
+function StatusPanel({
+  role,
+  tone,
+  eyebrow,
+  title,
+  icon,
+  children,
+}: {
+  role:
+    | "status"
+    | "alert";
+  tone:
+    | "success"
+    | "error"
+    | "neutral"
+    | "processing";
+  eyebrow: string;
+  title: string;
+  icon: string;
+  children: ReactNode;
+}) {
+  const styles = {
+    success: {
+      wrapper:
+        "border-secondary/30 bg-secondary/[0.08]",
+      icon:
+        "bg-secondary text-white",
+      eyebrow:
+        "text-secondary",
+    },
+
+    error: {
+      wrapper:
+        "border-accent/30 bg-accent/10",
+      icon:
+        "border border-accent/30 text-accent",
+      eyebrow:
+        "text-accent",
+    },
+
+    neutral: {
+      wrapper:
+        "border-foreground/15 bg-foreground/[0.025]",
+      icon:
+        "border border-foreground/20 text-foreground/55",
+      eyebrow:
+        "text-primary",
+    },
+
+    processing: {
+      wrapper:
+        "border-primary/20 bg-primary/[0.035]",
+      icon:
+        "border border-primary/30 text-primary",
+      eyebrow:
+        "text-primary",
+    },
+  }[tone];
+
+  return (
+    <section
+      role={role}
+      className={`border-y px-0 py-8 sm:px-6 sm:py-10 ${styles.wrapper}`}
+    >
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+        <div
+          aria-hidden="true"
+          className={`flex h-12 w-12 shrink-0 items-center justify-center font-sans text-lg font-bold ${styles.icon}`}
+        >
+          {icon}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p
+            className={`font-sans text-xs font-semibold uppercase tracking-[0.25em] ${styles.eyebrow}`}
+          >
+            {eyebrow}
+          </p>
+
+          <h2 className="mt-3 font-rye text-3xl leading-tight text-foreground sm:text-4xl">
+            {title}
+          </h2>
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px w-14 bg-foreground/20" />
+
+            <span className="text-xs text-primary">
+              ◆
+            </span>
+          </div>
+
+          {children}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =============================================
+   STATUS DETAIL
+============================================= */
+
+function StatusDetail({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div>
+      <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground/40">
+        {label}
+      </p>
+
+      <p
+        className={`mt-2 font-sans text-sm font-bold ${
+          accent
+            ? "text-secondary"
+            : "text-foreground"
+        }`}
+      >
+        {value}
+      </p>
     </div>
+  );
+}
+
+/* =============================================
+   HELPERS
+============================================= */
+
+function formatStatus(
+  status: OrderStatus
+) {
+  return (
+    status
+      .charAt(0)
+      .toUpperCase() +
+    status.slice(1)
   );
 }

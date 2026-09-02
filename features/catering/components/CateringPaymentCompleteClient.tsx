@@ -181,26 +181,52 @@ export default function CateringPaymentCompleteClient({
     status === "paid"
   ) {
     return (
-      <div
+      <section
         role="status"
-        className="rounded-2xl border border-secondary/20 bg-secondary/10 p-6"
+        className="border-y border-secondary/30 bg-secondary/10 py-8 sm:px-6 sm:py-10"
       >
-        <h2 className="text-2xl font-bold text-foreground">
-          Payment Complete
-        </h2>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary font-sans text-lg font-bold text-white">
+            ✓
+          </div>
 
-        <p className="mt-3 leading-7 text-foreground/70">
-          Your catering payment has
-          been confirmed.
-        </p>
+          <div className="flex-1">
+            <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-secondary">
+              Payment Confirmed
+            </p>
 
-        <Link
-          href={`/account/orders/${orderId}`}
-          className="mt-6 inline-block rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:opacity-90"
-        >
-          View Catering Order
-        </Link>
-      </div>
+            <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+              Payment Complete
+            </h2>
+
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px w-14 bg-foreground/20" />
+
+              <span className="text-xs text-primary">
+                ◆
+              </span>
+            </div>
+
+            <p className="max-w-xl font-sans text-sm leading-6 text-foreground/60 sm:text-base">
+              Your catering payment
+              has been confirmed and
+              your order is now
+              secured.
+            </p>
+
+            <Link
+              href={`/account/orders/${orderId}`}
+              className="group mt-7 flex min-h-12 w-full items-center justify-between bg-primary px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:opacity-90 sm:w-auto sm:min-w-[230px]"
+            >
+              View Catering Order
+
+              <span className="ml-5 text-lg transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -214,28 +240,44 @@ export default function CateringPaymentCompleteClient({
     status === "retry"
   ) {
     return (
-      <div
+      <section
         role="alert"
-        className="rounded-2xl bg-background p-6"
+        className="border-y border-primary/25 bg-primary/[0.05] py-8 sm:px-6 sm:py-10"
       >
-        <h2 className="text-xl font-bold text-foreground">
-          Payment Not Completed
-        </h2>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-primary/30 font-rye text-xl text-primary">
+            !
+          </div>
 
-        <p className="mt-3 leading-7 text-foreground/60">
-          Your payment still needs
-          attention. You can return to
-          the payment page and try
-          again.
-        </p>
+          <div className="flex-1">
+            <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+              Action Required
+            </p>
 
-        <Link
-          href={`/account/orders/${orderId}/payment`}
-          className="mt-6 inline-block rounded-xl bg-primary px-5 py-3 font-semibold text-white"
-        >
-          Return to Payment
-        </Link>
-      </div>
+            <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+              Payment Not Completed
+            </h2>
+
+            <p className="mt-4 max-w-xl font-sans text-sm leading-6 text-foreground/60 sm:text-base">
+              Your payment still needs
+              attention. Return to the
+              payment page and try
+              again.
+            </p>
+
+            <Link
+              href={`/account/orders/${orderId}/payment`}
+              className="group mt-7 flex min-h-12 w-full items-center justify-between bg-primary px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:opacity-90 sm:w-auto sm:min-w-[220px]"
+            >
+              Return to Payment
+
+              <span className="ml-5 text-lg transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -249,26 +291,44 @@ export default function CateringPaymentCompleteClient({
     status === "failed"
   ) {
     return (
-      <div
+      <section
         role="alert"
-        className="rounded-2xl border border-accent/20 bg-accent/10 p-6"
+        className="border-y border-accent/30 bg-accent/10 py-8 sm:px-6 sm:py-10"
       >
-        <h2 className="text-xl font-bold text-foreground">
-          Payment Failed
-        </h2>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-accent/30 font-sans text-lg font-bold text-accent">
+            ×
+          </div>
 
-        <p className="mt-3 text-foreground/60">
-          The payment was not
-          completed.
-        </p>
+          <div className="flex-1">
+            <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+              Payment Issue
+            </p>
 
-        <Link
-          href={`/account/orders/${orderId}/payment`}
-          className="mt-6 inline-block rounded-xl bg-primary px-5 py-3 font-semibold text-white"
-        >
-          Try Again
-        </Link>
-      </div>
+            <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+              Payment Failed
+            </h2>
+
+            <p className="mt-4 max-w-xl font-sans text-sm leading-6 text-foreground/60 sm:text-base">
+              The payment was not
+              completed. You can return
+              to the payment page and
+              try again.
+            </p>
+
+            <Link
+              href={`/account/orders/${orderId}/payment`}
+              className="group mt-7 flex min-h-12 w-full items-center justify-between bg-primary px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:opacity-90 sm:w-auto sm:min-w-[190px]"
+            >
+              Try Again
+
+              <span className="ml-5 text-lg transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -283,23 +343,39 @@ export default function CateringPaymentCompleteClient({
     "refunded"
   ) {
     return (
-      <div className="rounded-2xl bg-background p-6">
-        <h2 className="text-xl font-bold text-foreground">
-          Payment Refunded
-        </h2>
+      <section className="border-y border-foreground/15 py-8 sm:px-6 sm:py-10">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-foreground/20 font-rye text-xl text-foreground/60">
+            ↺
+          </div>
 
-        <p className="mt-3 text-foreground/60">
-          This catering payment has
-          been refunded.
-        </p>
+          <div className="flex-1">
+            <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+              Payment Update
+            </p>
 
-        <Link
-          href={`/account/orders/${orderId}`}
-          className="mt-6 inline-block font-semibold text-primary hover:underline"
-        >
-          View Order →
-        </Link>
-      </div>
+            <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+              Payment Refunded
+            </h2>
+
+            <p className="mt-4 max-w-xl font-sans text-sm leading-6 text-foreground/60 sm:text-base">
+              This catering payment
+              has been refunded.
+            </p>
+
+            <Link
+              href={`/account/orders/${orderId}`}
+              className="group mt-7 inline-flex items-center gap-4 font-sans text-xs font-bold uppercase tracking-[0.14em] text-foreground transition hover:text-primary"
+            >
+              View Order
+
+              <span className="text-lg transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -310,53 +386,80 @@ export default function CateringPaymentCompleteClient({
    */
 
   return (
-    <div
+    <section
       role="status"
-      className="rounded-2xl bg-background p-6"
+      className="border-y border-foreground/15 py-8 sm:px-6 sm:py-10"
     >
-      <h2 className="text-xl font-bold text-foreground">
-        {status ===
-        "finalizing"
-          ? "Finalizing Payment"
-          : "Payment Processing"}
-      </h2>
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
+          {!stoppedPolling ? (
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-foreground/10 border-t-primary" />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center border border-foreground/20 font-rye text-xl text-primary">
+              …
+            </div>
+          )}
+        </div>
 
-      {!stoppedPolling ? (
-        <>
-          <p className="mt-3 leading-7 text-foreground/60">
-            We received your payment
-            status and are waiting for
-            the order confirmation to
-            finish.
+        <div className="flex-1">
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+            Payment Status
           </p>
 
-          <div className="mt-5 flex items-center gap-3">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-black/10 border-t-primary" />
+          <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+            {status ===
+            "finalizing"
+              ? "Finalizing Payment"
+              : "Payment Processing"}
+          </h2>
 
-            <span className="text-sm font-medium text-foreground/60">
-              Checking payment
-              status...
-            </span>
-          </div>
-        </>
-      ) : (
-        <>
-          <p className="mt-3 leading-7 text-foreground/60">
-            Your payment is still being
-            confirmed. You can safely
-            return to your order and
-            check its payment status
-            again.
-          </p>
+          {!stoppedPolling ? (
+            <>
+              <p className="mt-4 max-w-xl font-sans text-sm leading-6 text-foreground/60 sm:text-base">
+                We received your
+                payment status and are
+                waiting for the order
+                confirmation to finish.
+              </p>
 
-          <Link
-            href={`/account/orders/${orderId}`}
-            className="mt-6 inline-block rounded-xl bg-primary px-5 py-3 font-semibold text-white"
-          >
-            View Order
-          </Link>
-        </>
-      )}
-    </div>
+              <div className="mt-7 flex items-center gap-3 border-t border-foreground/10 pt-5">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-50" />
+
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                </span>
+
+                <span className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-foreground/45">
+                  Checking payment
+                  status...
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="mt-4 max-w-xl font-sans text-sm leading-6 text-foreground/60 sm:text-base">
+                Your payment is still
+                being confirmed. You
+                can safely return to
+                your order and check
+                its payment status
+                again.
+              </p>
+
+              <Link
+                href={`/account/orders/${orderId}`}
+                className="group mt-7 flex min-h-12 w-full items-center justify-between border border-foreground/20 px-5 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] transition hover:border-foreground hover:bg-foreground hover:text-background sm:w-auto sm:min-w-[190px]"
+              >
+                View Order
+
+                <span className="ml-5 text-lg transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }

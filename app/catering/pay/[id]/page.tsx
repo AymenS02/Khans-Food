@@ -35,191 +35,364 @@ export default async function GuestCateringPaymentPage({
     );
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-12">
-      <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-        {/* Header */}
-        <div className="border-b border-black/10 pb-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+    <main className="overflow-hidden">
+      {/* =========================================
+          HERO
+      ========================================= */}
+
+      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+        <div className="border-b border-foreground/15 pb-12 sm:pb-16">
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-primary">
             Khans Food Catering
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-foreground">
-            Catering Payment
+          <h1 className="mt-4 max-w-4xl font-rye text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
+            Complete Your
+            <br className="hidden sm:block" />{" "}
+            Catering Payment.
           </h1>
 
-          <p className="mt-3 leading-7 text-foreground/60">
-            Complete payment for your
-            approved catering request.
+          <div className="my-7 flex items-center gap-3">
+            <div className="h-px w-16 bg-foreground/25" />
+
+            <span className="text-xs text-primary">
+              ◆
+            </span>
+
+            <div className="h-px w-16 bg-foreground/25" />
+          </div>
+
+          <p className="max-w-2xl font-sans text-sm leading-6 text-foreground/55 sm:text-base sm:leading-7">
+            Your catering request has
+            been approved. Review your
+            event details and complete
+            payment securely below.
           </p>
         </div>
+      </section>
 
-        {/* Event information */}
-        <div className="grid gap-5 border-b border-black/10 py-6 sm:grid-cols-3">
+      {/* =========================================
+          PAYMENT CONTENT
+      ========================================= */}
+
+      <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 sm:pb-28 lg:px-12">
+        <div className="grid gap-10 lg:grid-cols-[1fr_340px] lg:gap-16">
+          {/* =====================================
+              LEFT CONTENT
+          ===================================== */}
+
           <div>
-            <p className="text-sm text-foreground/50">
-              Event
-            </p>
+            {/* ===================================
+                READY
+            =================================== */}
 
-            <p className="mt-1 font-semibold">
-              {formatDateOnly(
-                payment.eventDate
+            {payment.status ===
+              "ready" &&
+              payment.clientSecret && (
+                <section>
+                  <div className="border-b border-foreground/15 pb-8">
+                    <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                      Secure Checkout
+                    </p>
+
+                    <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+                      Payment Details
+                    </h2>
+
+                    <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-foreground/55">
+                      Complete payment
+                      below to secure
+                      your approved
+                      catering order.
+                    </p>
+                  </div>
+
+                  <div className="pt-8">
+                    <GuestCateringPaymentClient
+                      orderId={
+                        payment.orderId
+                      }
+                      accessToken={
+                        token
+                      }
+                      clientSecret={
+                        payment.clientSecret
+                      }
+                    />
+                  </div>
+                </section>
               )}
-            </p>
+
+            {/* ===================================
+                ALREADY PAID
+            =================================== */}
+
+            {payment.status ===
+              "paid" && (
+              <PaymentStatusPanel
+                type="success"
+                eyebrow="Payment Confirmed"
+                title="Payment Complete"
+                description="This catering order has already been paid. No additional payment is required."
+              />
+            )}
+
+            {/* ===================================
+                FINALIZING
+            =================================== */}
+
+            {payment.status ===
+              "finalizing" && (
+              <PaymentStatusPanel
+                type="processing"
+                eyebrow="Almost Done"
+                title="Finalizing Payment"
+                description="Stripe has received the payment and your catering order confirmation is being finalized."
+              />
+            )}
+
+            {/* ===================================
+                PROCESSING
+            =================================== */}
+
+            {payment.status ===
+              "processing" && (
+              <PaymentStatusPanel
+                type="processing"
+                eyebrow="Payment Status"
+                title="Payment Processing"
+                description="Your payment is still being processed. No further action is required right now."
+              />
+            )}
+
+            {/* ===================================
+                FAILED
+            =================================== */}
+
+            {payment.status ===
+              "failed" && (
+              <PaymentStatusPanel
+                type="error"
+                eyebrow="Payment Issue"
+                title="Payment Unavailable"
+                description="This payment session can no longer be used. Please contact Khans Food for assistance."
+              />
+            )}
+
+            {/* ===================================
+                REFUNDED
+            =================================== */}
+
+            {payment.status ===
+              "refunded" && (
+              <PaymentStatusPanel
+                type="neutral"
+                eyebrow="Payment Update"
+                title="Payment Refunded"
+                description="This catering payment has been refunded."
+              />
+            )}
           </div>
 
-          <div>
-            <p className="text-sm text-foreground/50">
-              Guests
-            </p>
+          {/* =====================================
+              EVENT SUMMARY
+          ===================================== */}
 
-            <p className="mt-1 font-semibold">
-              {
-                payment.guestCount
-              }
-            </p>
-          </div>
+          <aside className="h-fit bg-foreground text-background lg:sticky lg:top-28">
+            <div className="p-6 sm:p-7">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                Your Event
+              </p>
 
-          <div>
-            <p className="text-sm text-foreground/50">
-              Amount
-            </p>
+              <h2 className="mt-3 font-rye text-3xl">
+                Catering Summary
+              </h2>
 
-            <p className="mt-1 text-xl font-bold text-primary">
-              $
-              {payment.total.toFixed(
-                2
-              )}
-            </p>
-          </div>
+              <div className="my-6 h-px bg-background/15" />
+
+              {/* EVENT DATE */}
+
+              <div>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  Event Date
+                </p>
+
+                <p className="mt-2 font-rye text-xl">
+                  {formatDateOnly(
+                    payment.eventDate
+                  )}
+                </p>
+              </div>
+
+              {/* GUESTS */}
+
+              <div className="mt-6 border-t border-background/15 pt-5">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  Guests
+                </p>
+
+                <p className="mt-2 font-rye text-2xl">
+                  {
+                    payment.guestCount
+                  }
+                </p>
+              </div>
+
+              {/* AMOUNT */}
+
+              <div className="mt-6 border-t border-background/15 pt-5">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  Amount
+                </p>
+
+                <p className="mt-2 font-rye text-4xl text-primary">
+                  $
+                  {payment.total.toFixed(
+                    2
+                  )}
+                </p>
+              </div>
+
+              {/* STATUS */}
+
+              <div className="mt-6 border-t border-background/15 pt-5">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
+                  Payment Status
+                </p>
+
+                <p className="mt-2 font-sans text-sm font-semibold capitalize">
+                  {
+                    payment.status
+                  }
+                </p>
+              </div>
+
+              {/* SECURITY */}
+
+              <div className="mt-7 border-t border-background/15 pt-5">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-background/20 font-sans text-[10px]">
+                    ✓
+                  </span>
+
+                  <p className="font-sans text-xs leading-5 text-background/45">
+                    This secure payment
+                    link is tied directly
+                    to your catering
+                    order.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+/* =============================================
+   STATUS PANEL
+============================================= */
+
+function PaymentStatusPanel({
+  type,
+  eyebrow,
+  title,
+  description,
+}: {
+  type:
+    | "success"
+    | "processing"
+    | "error"
+    | "neutral";
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  const styles = {
+    success: {
+      wrapper:
+        "border-secondary/30 bg-secondary/10",
+      icon:
+        "bg-secondary text-white",
+      eyebrow:
+        "text-secondary",
+      symbol: "✓",
+    },
+
+    processing: {
+      wrapper:
+        "border-primary/25 bg-primary/[0.05]",
+      icon:
+        "border border-primary/30 text-primary",
+      eyebrow:
+        "text-primary",
+      symbol: "…",
+    },
+
+    error: {
+      wrapper:
+        "border-accent/30 bg-accent/10",
+      icon:
+        "border border-accent/30 text-accent",
+      eyebrow:
+        "text-accent",
+      symbol: "×",
+    },
+
+    neutral: {
+      wrapper:
+        "border-foreground/15 bg-foreground/[0.025]",
+      icon:
+        "border border-foreground/20 text-foreground/60",
+      eyebrow:
+        "text-primary",
+      symbol: "↺",
+    },
+  }[type];
+
+  return (
+    <section
+      role={
+        type === "error"
+          ? "alert"
+          : "status"
+      }
+      className={`border-y px-0 py-8 sm:px-6 sm:py-10 ${styles.wrapper}`}
+    >
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center font-sans text-lg font-bold ${styles.icon}`}
+        >
+          {styles.symbol}
         </div>
 
-        {/* ==========================================
-            READY
-        ========================================== */}
+        <div>
+          <p
+            className={`font-sans text-xs font-semibold uppercase tracking-[0.25em] ${styles.eyebrow}`}
+          >
+            {eyebrow}
+          </p>
 
-        {payment.status ===
-          "ready" &&
-          payment.clientSecret && (
-            <div className="pt-6">
-              <GuestCateringPaymentClient
-                orderId={
-                  payment.orderId
-                }
-                accessToken={
-                  token
-                }
-                clientSecret={
-                  payment.clientSecret
-                }
-              />
-            </div>
-          )}
+          <h2 className="mt-3 font-rye text-3xl text-foreground sm:text-4xl">
+            {title}
+          </h2>
 
-        {/* ==========================================
-            ALREADY PAID
-        ========================================== */}
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px w-14 bg-foreground/20" />
 
-        {payment.status ===
-          "paid" && (
-          <div className="pt-6">
-            <div className="rounded-xl border border-secondary/20 bg-secondary/10 p-5">
-              <h2 className="text-xl font-bold">
-                Payment Complete
-              </h2>
-
-              <p className="mt-2 text-foreground/60">
-                This catering order
-                has already been paid.
-              </p>
-            </div>
+            <span className="text-xs text-primary">
+              ◆
+            </span>
           </div>
-        )}
 
-        {/* ==========================================
-            FINALIZING
-        ========================================== */}
-
-        {payment.status ===
-          "finalizing" && (
-          <div className="pt-6">
-            <div className="rounded-xl bg-background p-5">
-              <h2 className="text-xl font-bold">
-                Finalizing Payment
-              </h2>
-
-              <p className="mt-2 text-foreground/60">
-                Stripe has received
-                the payment and the
-                order confirmation is
-                being finalized.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ==========================================
-            PROCESSING
-        ========================================== */}
-
-        {payment.status ===
-          "processing" && (
-          <div className="pt-6">
-            <div className="rounded-xl bg-background p-5">
-              <h2 className="text-xl font-bold">
-                Payment Processing
-              </h2>
-
-              <p className="mt-2 text-foreground/60">
-                Your payment is still
-                being processed.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ==========================================
-            FAILED
-        ========================================== */}
-
-        {payment.status ===
-          "failed" && (
-          <div className="pt-6">
-            <div className="rounded-xl border border-accent/20 bg-accent/10 p-5">
-              <h2 className="text-xl font-bold">
-                Payment Unavailable
-              </h2>
-
-              <p className="mt-2 text-foreground/60">
-                This payment session
-                can no longer be used.
-                Please contact Khans
-                Food for assistance.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ==========================================
-            REFUNDED
-        ========================================== */}
-
-        {payment.status ===
-          "refunded" && (
-          <div className="pt-6">
-            <div className="rounded-xl bg-background p-5">
-              <h2 className="text-xl font-bold">
-                Payment Refunded
-              </h2>
-
-              <p className="mt-2 text-foreground/60">
-                This catering payment
-                has been refunded.
-              </p>
-            </div>
-          </div>
-        )}
+          <p className="max-w-xl font-sans text-sm leading-6 text-foreground/60 sm:text-base">
+            {description}
+          </p>
+        </div>
       </div>
-    </main>
+    </section>
   );
 }
 
