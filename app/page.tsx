@@ -199,7 +199,7 @@ export default async function HomePage() {
             {featuredMenu.map(
               (item, index) => (
                 <article
-                  key={item.id}
+                  key={item._id}
                   className="group"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden bg-foreground/5">
