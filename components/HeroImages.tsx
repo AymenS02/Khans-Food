@@ -137,7 +137,7 @@ export default function HeroImages({
 
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute bottom-[5%] left-1/2 -z-10 h-[22%] w-[75%] -translate-x-1/2 rounded-full bg-black/25 blur-xl"
+              className="pointer-events-none absolute bottom-[5%] left-1/2 -z-10 h-[28%] w-[90%] -translate-x-1/2 rounded-full bg-black/55 blur-lg"
             />
 
             <Image
@@ -161,7 +161,7 @@ export default function HeroImages({
 
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute bottom-[5%] left-1/2 -z-10 h-[22%] w-[75%] -translate-x-1/2 rounded-full bg-black/25 blur-xl"
+              className="pointer-events-none absolute bottom-[5%] left-1/2 -z-10 h-[28%] w-[90%] -translate-x-1/2 rounded-full bg-black/55 blur-lg"
             />
 
             <Image
@@ -185,7 +185,7 @@ export default function HeroImages({
 
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute bottom-[5%] left-1/2 -z-10 h-[22%] w-[75%] -translate-x-1/2 rounded-full bg-black/25 blur-xl"
+              className="pointer-events-none absolute bottom-[5%] left-1/2 -z-10 h-[28%] w-[90%] -translate-x-1/2 rounded-full bg-black/55 blur-lg"
             />
 
             <Image
