@@ -6,6 +6,7 @@ import HeroImages from "@/components/HeroImages";
 import { getMenuItems } from "@/features/menu/actions/getMenuItems";
 import { getPublicCateringCatalog } from "@/features/catering/services/getPublicCateringCatalog";
 import { getPublicBusinessSettings } from "@/features/business/services/getPublicBusinessSettings";
+import ScrollLine from "@/components/ScrollLine";
 
 export default async function HomePage() {
   const [
@@ -29,7 +30,7 @@ export default async function HomePage() {
 
   return (
     <main className="relative overflow-hidden">
-
+      <ScrollLine />
       {/* =========================================
           HERO
       ========================================= */}
@@ -165,10 +166,14 @@ export default async function HomePage() {
           Food worth gathering for
         </p>
 
-        <h2 className="mx-auto mt-5 max-w-4xl font-rye text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
-          Good food turns a gathering
-          into an occasion.
-        </h2>
+        <div className="mt-5">
+          <h2 className="mx-auto max-w-4xl text-center font-rye text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
+            Great food makes every gathering{" "}
+            <span className="bg-primary px-2 py-1">
+              memorable.
+            </span>
+          </h2>
+        </div>
 
         <Divider centered />
 
@@ -196,12 +201,12 @@ export default async function HomePage() {
 
         {featuredMenu.length > 0 ? (
           <div className="mt-12 grid gap-7 md:grid-cols-3">
-            {featuredMenu.map(
-              (item, index) => (
-                <article
-                  key={item._id}
-                  className="group"
-                >
+            {featuredMenu.map((item, index) => (
+              <MenuCardReveal
+                key={item._id}
+                index={index}
+              >
+                <article className="group">
                   <div className="relative aspect-[4/5] overflow-hidden bg-foreground/5">
                     {item.image ? (
                       <Image
@@ -229,107 +234,134 @@ export default async function HomePage() {
                       </h3>
 
                       <p className="shrink-0 font-sans text-sm font-bold text-primary">
-                        $
-                        {item.price.toFixed(
-                          2
-                        )}
+                        ${item.price.toFixed(2)}
                       </p>
                     </div>
 
                     {item.description && (
                       <p className="mt-2 line-clamp-2 font-sans text-sm leading-6 text-foreground/55">
-                        {
-                          item.description
-                        }
+                        {item.description}
                       </p>
                     )}
 
                     <div className="mt-5 h-px w-full bg-foreground/10" />
                   </div>
                 </article>
-              )
-            )}
-          </div>
-        ) : (
-          <p className="mt-10 font-sans text-foreground/60">
-            Menu items are coming soon.
-          </p>
-        )}
+              </MenuCardReveal>
+            ))}
+            </div>
+          ) : (
+            <p className="mt-10 font-sans text-foreground/60">
+              Menu items are coming soon.
+            </p>
+          )}
       </section>
 
       {/* =========================================
           CATERING STATEMENT
       ========================================= */}
 
-      <section className="relative bg-foreground px-5 py-24 text-background sm:px-8 sm:py-32">
-        <div className="absolute inset-0 opacity-[0.035]">
-          <div className="h-full w-full bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] bg-[length:22px_22px]" />
-        </div>
+      <CateringStatementMotion>
+        <section className="relative bg-foreground px-5 py-24 text-background sm:px-8 sm:py-32">
+          <div className="absolute inset-0 opacity-[0.035]">
+            <div className="h-full w-full bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] bg-[length:22px_22px]" />
+          </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-20">
-          <div>
-            <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-              Catering by Khans
-            </p>
+          <div className="relative mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-20">
+            <div>
+              <p
+                data-catering-eyebrow
+                className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-primary"
+              >
+                Catering by Khans
+              </p>
 
-            <h2 className="mt-5 max-w-xl font-rye text-4xl leading-tight sm:text-5xl lg:text-6xl">
-              Your Event.
-              <br />
-              Our Feast.
-            </h2>
+              <h2 className="mt-5 max-w-xl font-rye text-4xl leading-tight sm:text-5xl lg:text-6xl">
+                <span className="block overflow-hidden">
+                  <span
+                    data-catering-heading-line
+                    className="block"
+                  >
+                    Your Event.
+                  </span>
+                </span>
 
-            <div className="my-7 flex items-center gap-3">
-              <div className="h-px w-20 bg-background/25" />
-              <span className="text-xs text-primary">
-                ◆
-              </span>
+                <span className="block overflow-hidden">
+                  <span
+                    data-catering-heading-line
+                    className="block"
+                  >
+                    Our Feast.
+                  </span>
+                </span>
+              </h2>
+
+              <div className="my-7 flex items-center gap-3">
+                <div
+                  data-catering-divider
+                  className="h-px w-20 bg-background/25"
+                />
+
+                <span
+                  data-catering-diamond
+                  className="text-xs text-primary"
+                >
+                  ◆
+                </span>
+              </div>
+
+              <p
+                data-catering-copy
+                className="max-w-lg font-sans text-base leading-7 text-background/65"
+              >
+                Weddings, family gatherings, celebrations,
+                work events, and everything in between.
+                Choose one of our packages or create a menu
+                that fits your occasion.
+              </p>
+
+              <Link
+                data-catering-button
+                href="/catering"
+                className="mt-8 inline-flex min-h-12 items-center justify-center bg-primary px-7 py-3 font-sans text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:opacity-85"
+              >
+                Start Your Catering Request
+                <span className="ml-3">→</span>
+              </Link>
             </div>
 
-            <p className="max-w-lg font-sans text-base leading-7 text-background/65">
-              Weddings, family
-              gatherings, celebrations,
-              work events, and
-              everything in between.
-              Choose one of our
-              packages or create a menu
-              that fits your occasion.
-            </p>
+            <div className="grid grid-cols-2 gap-px overflow-hidden border border-background/15 bg-background/15">
+              <div data-occasion-card>
+                <Occasion
+                  title="Weddings"
+                  number="01"
+                />
+              </div>
 
-            <Link
-              href="/catering"
-              className="mt-8 inline-flex min-h-12 items-center justify-center bg-primary px-7 py-3 font-sans text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:opacity-85"
-            >
-              Start Your Catering
-              Request
-              <span className="ml-3">
-                →
-              </span>
-            </Link>
+              <div data-occasion-card>
+                <Occasion
+                  title="Family Gatherings"
+                  number="02"
+                />
+              </div>
+
+              <div data-occasion-card>
+                <Occasion
+                  title="Corporate Events"
+                  number="03"
+                />
+              </div>
+
+              <div data-occasion-card>
+                <Occasion
+                  title="Celebrations"
+                  number="04"
+                />
+              </div>
+            </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-px overflow-hidden border border-background/15 bg-background/15">
-            <Occasion
-              title="Weddings"
-              number="01"
-            />
-
-            <Occasion
-              title="Family Gatherings"
-              number="02"
-            />
-
-            <Occasion
-              title="Corporate Events"
-              number="03"
-            />
-
-            <Occasion
-              title="Celebrations"
-              number="04"
-            />
-          </div>
-        </div>
-      </section>
+        </section>
+      </CateringStatementMotion>
 
       {/* =========================================
           CATERING PACKAGES
@@ -574,31 +606,10 @@ function Divider({
   );
 }
 
-function Feature({
-  number,
-  title,
-  description,
-}: {
-  number: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="px-4 py-10 sm:px-7">
-      <p className="font-sans text-xs font-semibold text-primary">
-        {number}
-      </p>
-
-      <h3 className="mt-3 font-rye text-xl">
-        {title}
-      </h3>
-
-      <p className="mt-2 max-w-xs font-sans text-sm leading-6 text-background/55">
-        {description}
-      </p>
-    </div>
-  );
-}
+import Feature from "@/components/Feature";
+import MenuCard from "@/features/menu/components/MenuCard";
+import MenuCardReveal from "@/components/MenuCardReveal";
+import CateringStatementMotion from "@/components/CateringStatementMotion";
 
 function SectionHeading({
   eyebrow,
@@ -645,7 +656,10 @@ function Occasion({
   title: string;
 }) {
   return (
-    <div className="min-h-40 bg-foreground p-6 sm:min-h-48">
+    <div
+      data-occasion-card
+      className="min-h-40 bg-foreground p-6 sm:min-h-48"
+    >
       <p className="font-sans text-xs text-primary">
         {number}
       </p>

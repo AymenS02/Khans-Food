@@ -208,7 +208,7 @@ export default function HeroImages({
   return (
     <div
       ref={containerRef}
-      className="relative w-[800px]"
+      className="relative w-[600px]"
     >
       {/* MAIN IMAGE */}
 
