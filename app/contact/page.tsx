@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import ContactForm from "@/features/contact/components/ContactForm";
+
 import { getPublicBusinessSettings } from "@/features/business/services/getPublicBusinessSettings";
 
 export default async function ContactPage() {
@@ -181,6 +183,78 @@ export default async function ContactPage() {
               </div>
             </div>
           </article>
+        </div>
+      </section>
+
+      {/* =========================================
+          CONTACT FORM
+      ========================================= */}
+
+      <section className="border-t border-foreground/15">
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20 lg:px-12">
+          {/* INTRO */}
+
+          <div>
+            <div className="lg:sticky lg:top-28">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+                Get in Touch
+              </p>
+
+              <h2 className="mt-4 max-w-md font-rye text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">
+                Send Us a Message.
+              </h2>
+
+              <div className="my-6 flex items-center gap-3">
+                <div className="h-px w-14 bg-foreground/20" />
+
+                <span className="text-xs text-primary">
+                  ◆
+                </span>
+              </div>
+
+              <p className="max-w-md font-sans text-sm leading-6 text-foreground/55 sm:text-base sm:leading-7">
+                Have a question that
+                isn&apos;t answered
+                above? Send us the
+                details and we&apos;ll
+                get back to you as soon
+                as we can.
+              </p>
+
+              <div className="mt-10 border-t border-foreground/15 pt-6">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground/40">
+                  Order Questions
+                </p>
+
+                <p className="mt-2 max-w-sm font-sans text-xs leading-5 text-foreground/50">
+                  Include your order
+                  number when possible
+                  so we can help you
+                  faster.
+                </p>
+              </div>
+
+              <div className="mt-6 border-t border-foreground/15 pt-6">
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground/40">
+                  Catering
+                </p>
+
+                <p className="mt-2 max-w-sm font-sans text-xs leading-5 text-foreground/50">
+                  For new events, our
+                  catering request
+                  builder is still the
+                  fastest way to start
+                  planning.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* FORM */}
+
+          <div className="border-t border-foreground/15 pt-8 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
+            <ContactForm />
+          </div>
         </div>
       </section>
 
