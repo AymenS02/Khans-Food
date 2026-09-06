@@ -27,7 +27,7 @@ export default function ScrollLine() {
       scrollTrigger: {
         trigger: document.documentElement,
         start: "top bottom",
-        end: "bottom bottom",
+        end: "max",
         scrub: 1,
       },
     });
