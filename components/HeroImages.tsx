@@ -43,76 +43,54 @@ export default function HeroImages({
       null
     );
 
-  useLayoutEffect(() => {
-    const ctx =
-      gsap.context(() => {
-        gsap.to(
-          hero1Ref.current,
-          {
-            y: -190,
-            ease: "none",
+useLayoutEffect(() => {
+  const ctx = gsap.context(() => {
+    const heroes = [
+      hero1Ref.current,
+      hero2Ref.current,
+      hero3Ref.current,
+    ];
 
-            scrollTrigger: {
-              trigger:
-                containerRef.current,
+    gsap.set(heroes, {
+      autoAlpha: 1,
+    });
 
-              start:
-                "top 50%",
+    gsap.to(hero1Ref.current, {
+      y: -190,
+      ease: "none",
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top 50%",
+        end: "bottom top",
+        scrub: true,
+      },
+    });
 
-              end:
-                "bottom top",
+    gsap.to(hero2Ref.current, {
+      y: -190,
+      ease: "none",
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top 50%",
+        end: "bottom top",
+        scrub: true,
+      },
+    });
 
-              scrub: true,
-            },
-          }
-        );
+    gsap.to(hero3Ref.current, {
+      y: -190,
+      ease: "none",
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top 50%",
+        end: "bottom top",
+        scrub: true,
+      },
+    });
+  }, containerRef);
 
-        gsap.to(
-          hero2Ref.current,
-          {
-            y: -190,
-            ease: "none",
-
-            scrollTrigger: {
-              trigger:
-                containerRef.current,
-
-              start:
-                "top 50%",
-
-              end:
-                "bottom top",
-
-              scrub: true,
-            },
-          }
-        );
-
-        gsap.to(
-          hero3Ref.current,
-          {
-            y: -190,
-            ease: "none",
-
-            scrollTrigger: {
-              trigger:
-                containerRef.current,
-
-              start:
-                "top 50%",
-
-              end:
-                "bottom top",
-
-              scrub: true,
-            },
-          }
-        );
-      }, containerRef);
-
-    return () =>
-      ctx.revert();
-  }, []);
+  return () => ctx.revert();
+}, []);
 
   /* =============================================
      MOBILE
@@ -130,7 +108,7 @@ export default function HeroImages({
 
         <div
           ref={hero1Ref}
-          className="relative z-0 -mb-6 -mr-6 w-1/3 transform-gpu will-change-transform"
+          className="invisible relative z-0 -mb-6 -mr-6 w-1/3 transform-gpu will-change-transform"
         >
           <div className="relative rotate-[-17deg]">
             {/* Stable mobile shadow */}
@@ -154,7 +132,7 @@ export default function HeroImages({
 
         <div
           ref={hero2Ref}
-          className="relative z-10 w-1/3 transform-gpu will-change-transform"
+          className="invisible relative z-10 w-1/3 transform-gpu will-change-transform"
         >
           <div className="relative">
             {/* Stable mobile shadow */}
@@ -178,7 +156,7 @@ export default function HeroImages({
 
         <div
           ref={hero3Ref}
-          className="relative z-0 -mb-6 -ml-6 w-1/3 transform-gpu will-change-transform"
+          className="invisible relative z-0 -mb-6 -ml-6 w-1/3 transform-gpu will-change-transform"
         >
           <div className="relative rotate-[17deg]">
             {/* Stable mobile shadow */}
@@ -214,7 +192,7 @@ export default function HeroImages({
 
       <div
         ref={hero1Ref}
-        className="relative z-0 transform-gpu will-change-transform"
+        className="invisible relative z-0 transform-gpu will-change-transform"
       >
         <Image
           src="/hero.png"
@@ -229,7 +207,7 @@ export default function HeroImages({
 
       <div
         ref={hero2Ref}
-        className="absolute -left-4 -top-10 z-10 w-[38%] transform-gpu will-change-transform"
+        className="invisible absolute -left-4 -top-10 z-10 w-[38%] transform-gpu will-change-transform"
       >
         <Image
           src="/hero2.png"
@@ -244,7 +222,7 @@ export default function HeroImages({
 
       <div
         ref={hero3Ref}
-        className="absolute bottom-6 right-[-3rem] z-20 w-[35%] transform-gpu will-change-transform"
+        className="invisible absolute bottom-6 right-[-3rem] z-20 w-[35%] transform-gpu will-change-transform"
       >
         <Image
           src="/hero3.png"
