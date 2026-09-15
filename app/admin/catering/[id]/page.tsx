@@ -8,6 +8,7 @@ import { rejectCateringRequest } from "@/actions/catering/rejectCateringRequest"
 import { createCateringPaymentAccessToken } from "@/lib/orderAccessToken";
 
 import type { AdminCateringRequest } from "@/features/catering/types/adminCatering";
+import CopyPaymentLink from "@/components/Copy";
 
 interface AdminCateringRequestPageProps {
   params: Promise<{
@@ -662,10 +663,11 @@ export default async function AdminCateringRequestPage({
                           so they can pay their approved
                           catering order.
                         </p>
-
-                        <div className="mt-3 break-all rounded-xl bg-white/70 p-3 font-mono text-xs">
-                          {`/catering/pay/${request.order}?token=${guestPaymentToken}`}
-                        </div>
+                        
+                        <CopyPaymentLink
+                          orderId={request.order.toString()}
+                          guestPaymentToken={guestPaymentToken}
+                        />
                       </div>
                     )}
                 </>

@@ -119,29 +119,29 @@ export default function PackageCateringRequestForm({
               Request Received
             </p>
 
-            <h2 className="mt-2 font-rye text-2xl leading-tight text-foreground sm:text-3xl">
+            <h2 className="mt-2 font-rye text-2xl leading-tight text-background sm:text-3xl">
               Request Submitted
             </h2>
 
-            <p className="mt-4 font-sans text-sm leading-6 text-foreground/60">
+            <p className="mt-4 font-sans text-sm leading-6 text-background/60">
               Your catering request
               has been received and is
               waiting for review.
             </p>
 
-            <div className="mt-6 border-t border-foreground/15 pt-5">
-              <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground/40">
+            <div className="mt-6 border-t border-background/15 pt-5">
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-background/40">
                 Request ID
               </p>
 
-              <p className="mt-2 break-all font-mono text-xs font-semibold leading-5 text-foreground/65">
+              <p className="mt-2 break-all font-mono text-xs font-semibold leading-5 text-background/65">
                 {
                   submittedRequestId
                 }
               </p>
             </div>
 
-            <div className="mt-6 border-t border-foreground/15 pt-5">
+            <div className="mt-6 border-t border-background/15 pt-5">
               <div className="flex items-start gap-3">
                 <span
                   aria-hidden="true"
@@ -150,7 +150,7 @@ export default function PackageCateringRequestForm({
                   ◆
                 </span>
 
-                <p className="font-sans text-xs leading-5 text-foreground/45">
+                <p className="font-sans text-xs leading-5 text-background/45">
                   No payment is required
                   until your request has
                   been reviewed and

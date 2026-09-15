@@ -94,7 +94,7 @@ export default function MenuGrid({
           CATEGORY HEADER
       ====================================== */}
 
-      <div className="flex flex-wrap flex-col gap-7 border-b border-foreground/15 pb-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex min-w-0 flex-wrap flex-col gap-7 border-b border-foreground/15 pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-primary">
             From Our Kitchen
@@ -104,18 +104,20 @@ export default function MenuGrid({
             Explore the Menu
           </h2>
         </div>
-
-        <CategoryTabs
-          categories={
-            categories
-          }
-          activeCategory={
-            activeCategory
-          }
-          onCategoryChange={
-            setActiveCategory
-          }
-        />
+        
+        <div className="w-full min-w-0 lg:w-auto">
+          <CategoryTabs
+            categories={
+              categories
+            }
+            activeCategory={
+              activeCategory
+            }
+            onCategoryChange={
+              setActiveCategory
+            }
+          />
+        </div>
       </div>
 
       {/* ======================================

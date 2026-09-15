@@ -6,7 +6,7 @@ export default async function MenuPage() {
     await getMenuItems();
 
   return (
-    <main className="overflow-hidden">
+    <main className="">
       {/* =========================================
           HERO
       ========================================= */}
