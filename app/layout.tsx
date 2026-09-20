@@ -7,6 +7,8 @@ import { auth } from "@/auth";
 
 import { Rye } from "next/font/google";
 
+import SmoothScroll from "@/components/SmoothScroll";
+
 export const metadata: Metadata = {
   title: "Khans Food",
   description: "Khans Food Catering",
@@ -34,7 +36,10 @@ export default async function RootLayout({
       lang="en"
       className="antialiased"
     >
-      <body className="flex min-h-screen flex-col bg-background text-foreground {rye.variable}">
+      <body className={`${rye.variable} flex min-h-screen flex-col bg-background text-foreground`}>
+
+        <SmoothScroll />
+        
         <Navbar
           isLoggedIn={isLoggedIn}
           isAdmin={isAdmin}
